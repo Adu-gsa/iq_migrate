@@ -1,4 +1,0 @@
-bronze_silver
-ddl
-env
-ingest_table

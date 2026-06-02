@@ -1,21 +1,13 @@
-# Databricks notebook source
-# MAGIC %md
-# MAGIC # ETL Utilities — `etl_utils`
-# MAGIC
-# MAGIC | Field | Value |
-# MAGIC |-------|-------|
-# MAGIC | **Developed by** | Adu Erena |
-# MAGIC | **Date** | 2026-05-07 |
-# MAGIC | **Version** | 2.0 |
-# MAGIC
-# MAGIC **Description:** Centralized ETL utility library shared across all ingestion pipelines. Contains reusable functions for:
-# MAGIC - Execution logging via `@log_execution` decorator
-# MAGIC - ETL audit log table management (DDL + DML)
-# MAGIC - Post-ingestion file archiving (date-partitioned)
-# MAGIC
-# MAGIC > **Supports:** `dev`, `test`, and `prod` environments.
+"""
+ETL Utilities — `etl_utils`
+**Description:** Centralized ETL utility library shared across all ingestion pipelines. Contains reusable functions for:
+- Execution logging via `@log_execution` decorator
+- ETL audit log table management (DDL + DML)
+- Post-ingestion file archiving (date-partitioned)
+"""
 
-# COMMAND ----------
+
+
 
 import time
 import traceback
@@ -30,12 +22,6 @@ from pyspark.sql.types import (
 
 print("[INFO] etl_utils: library imports loaded successfully.")
 
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## `log_execution` — Logging Decorator
-
-# COMMAND ----------
 
 def log_execution(func):
     """Decorator: logs start/end time, elapsed duration, and full traceback on failure."""
@@ -64,12 +50,6 @@ def log_execution(func):
 
 print("[INFO] etl_utils: log_execution decorator defined.")
 
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## `ensure_etl_log_table_exists` — DDL
-
-# COMMAND ----------
 
 @log_execution
 def ensure_etl_log_table_exists(catalog: str, schema: str, env: str):
@@ -99,12 +79,6 @@ def ensure_etl_log_table_exists(catalog: str, schema: str, env: str):
     spark.sql(ddl)
     print(f"[INFO] ETL log table ready: {full_table_name}")
 
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## `write_etl_log` — DML
-
-# COMMAND ----------
 
 @log_execution
 def write_etl_log(
@@ -145,14 +119,6 @@ def write_etl_log(
     log_df.write.format("delta").mode("append").saveAsTable(full_log_table)
     print("[INFO] ETL log entry written.")
 
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## `archive_file` — Post-Ingestion Archive
-# MAGIC
-# MAGIC Moves source file to `<archive_base>/<env>/YYYY-MM-DD/<filename>` using `dbutils.fs.mv`.
-
-# COMMAND ----------
 
 @log_execution
 def archive_file(source_file_path: str, archive_base_path: str, env: str):
@@ -173,7 +139,6 @@ def archive_file(source_file_path: str, archive_base_path: str, env: str):
         print(f"[ERROR] {error_msg}")
         raise Exception(error_msg) from e
 
-# COMMAND ----------
 
 print("[INFO] etl_utils: all functions loaded.")
 print("[INFO] Available: log_execution | ensure_etl_log_table_exists | write_etl_log | archive_file")

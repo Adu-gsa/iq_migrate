@@ -1,39 +1,13 @@
-# Databricks notebook source
-# MAGIC %md
-# MAGIC # Storage & Environment Configuration — `environment_config`
-# MAGIC
-# MAGIC | Field | Value |
-# MAGIC |-------|-------|
-# MAGIC | **Developed by** | Adu Erena> |
-# MAGIC | **Date** | 2026-05-07 |
-# MAGIC | **Version** | 2.0 |
-# MAGIC
-# MAGIC **Description:** Centralized storage, environment, and catalog configuration for FAS Advantage pipelines. Provides:
-# MAGIC - Environment identifiers (`DEV`, `TEST`, `PROD`)
-# MAGIC - Unity Catalog mapping (env → catalog name)
-# MAGIC - Databricks workspace URLs per environment
-# MAGIC - Volume storage location resolution (inbound / outbound paths, case-insensitive table names)
-# MAGIC - Data Sharing Enabled (DSE) write permission check
-# MAGIC - Fully qualified table name builder
-# MAGIC
-# MAGIC **Catalog mapping:**
-# MAGIC
-# MAGIC | Environment | Catalog |
-# MAGIC |-------------|---------|
-# MAGIC | `dev` | `foia_dev` |
-# MAGIC | `test` | `foia_tst` |
-# MAGIC | `prod` | `foia_prod` |
-# MAGIC
-# MAGIC **Path mapping:**
-# MAGIC
-# MAGIC | Direction | Pattern |
-# MAGIC |-----------|---------|
-# MAGIC | Inbound   | `/Volumes/fas_advantage_np/bronze/fas_advantage_s3_np/IQ_RAW_FILES/<table>` |
-# MAGIC | Outbound  | `/Volumes/fas_advantage_np/bronze/fas_advantage_s3_np/IQ_RAW_FILES_OUTBOUND/<table>_outbound` |
-# MAGIC
-# MAGIC > `%run` this notebook to access `EnvironmentConfig` in any downstream notebook.
+"""
+Storage & Environment Configuration — `environment_config`
+**Description:** Centralized storage, environment, and catalog configuration for FAS Advantage pipelines. Provides:
+- Environment identifiers (`DEV`, `TEST`, `PROD`)
+- Unity Catalog mapping (env → catalog name)
+- Databricks workspace URLs per environment
+"""
 
-# COMMAND ----------
+
+
 
 class EnvironmentConfig:
     """Centralized environment, catalog, and storage configuration for FAS Advantage pipelines."""

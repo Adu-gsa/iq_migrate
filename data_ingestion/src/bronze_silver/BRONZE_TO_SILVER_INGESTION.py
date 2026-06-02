@@ -1,30 +1,18 @@
-# Databricks notebook source
-# MAGIC %md
-# MAGIC # Bronze to Silver Sequential Ingestion
-# MAGIC
-# MAGIC This notebook runs a direct Bronze -> Silver transformation flow using the Silver table datatypes as the target contract.
-# MAGIC
-# MAGIC Ingestion strategy:
-# MAGIC 1. Execute `SILVER_LAYER_DDL.ipynb` so Silver table definitions are created/refreshed first.
-# MAGIC 2. Read each Bronze table (Bronze values are currently stored as STRING).
-# MAGIC 3. Cast columns to Silver target datatypes (INT, DECIMAL, TIMESTAMP, DOUBLE, TINYINT, BOOLEAN, DATE, etc.).
-# MAGIC 4. Validate cast quality and detect rows where a non-empty source value became NULL after casting.
-# MAGIC 5. Write transformed data directly to `foia_tst.silver.<table>` (no staging table, no quarantine table).
-# MAGIC 6. Log success/failure and row counts into `foia_tst.silver.etl_log`.
+"""
+Bronze to Silver Sequential Ingestion
+This notebook runs a direct Bronze -> Silver transformation flow using the Silver table datatypes as the target contract.
+Ingestion strategy:
+1. Execute `SILVER_LAYER_DDL.ipynb` so Silver table definitions are created/refreshed first.
+2. Read each Bronze table (Bronze values are currently stored as STRING).
+"""
 
-# COMMAND ----------
 
-# MAGIC %run ../src/env/environment_config
+from env.environment_config import *  # noqa: F403 (was: %run ../src/env/environment_config)
+from env.etl_utils import *  # noqa: F403 (was: %run ../src/env/etl_utils)
+from bronze_silver.SILVER_LAYER_DDL import *  # noqa: F403 (was: %run ./SILVER_LAYER_DDL)
 
-# COMMAND ----------
 
-# MAGIC %run ../src/env/etl_utils
 
-# COMMAND ----------
-
-# MAGIC %run ./SILVER_LAYER_DDL
-
-# COMMAND ----------
 
 from datetime import datetime
 from functools import reduce
@@ -40,25 +28,6 @@ catalog = "foia_tst"
 bronze_schema = "bronze"
 silver_schema = "silver"
 etl_log_schema = silver_schema  # Silver jobs must log to foia_tst.silver.etl_log
-
-dbutils.widgets.text("job_id", "", "Databricks Job ID")
-dbutils.widgets.text("job_run_id", "", "Databricks Job Run ID")
-dbutils.widgets.text("task_id", "", "Databricks Task ID")
-dbutils.widgets.text("task_run_id", "", "Databricks Task Run ID")
-dbutils.widgets.dropdown("fail_on_cast_errors", "false", ["true", "false"], "Fail On Cast Errors")
-dbutils.widgets.text("cast_error_max_rows", "0", "Cast Error Max Rows")
-dbutils.widgets.text("cast_error_max_pct", "0", "Cast Error Max Percent")
-
-job_ids = {
-    "job_id": dbutils.widgets.get("job_id").strip(),
-    "job_run_id": dbutils.widgets.get("job_run_id").strip(),
-    "task_id": dbutils.widgets.get("task_id").strip(),
-    "task_run_id": dbutils.widgets.get("task_run_id").strip(),
-}
-
-fail_on_cast_errors = dbutils.widgets.get("fail_on_cast_errors").strip().lower() == "true"
-cast_error_max_rows = int(dbutils.widgets.get("cast_error_max_rows").strip() or "0")
-cast_error_max_pct = float(dbutils.widgets.get("cast_error_max_pct").strip() or "0")
 
 def resolve_tables_for_ingestion():
     # Resolve tables directly from Silver schema so ingestion follows SILVER_LAYER_DDL definitions.
@@ -138,19 +107,6 @@ def write_etl_log(
     ])
 
     spark.createDataFrame(log_data, schema=log_schema).write.format("delta").mode("append").saveAsTable(full_log_table)
-
-tables = resolve_tables_for_ingestion()
-
-print(
-    f"[INFO] catalog={catalog} source_schema={bronze_schema} target_schema={silver_schema} "
-    f"fail_on_cast_errors={fail_on_cast_errors} cast_error_max_rows={cast_error_max_rows} "
-    f"cast_error_max_pct={cast_error_max_pct} tables={len(tables)}"
-)
-
-# Ensure ETL log table exists in Silver schema.
-ensure_etl_log_table_exists(catalog, etl_log_schema, env="test")
-
-# COMMAND ----------
 
 def _empty_to_null(col_expr):
     # Standardize blank strings from Bronze into NULL before casting.
@@ -301,80 +257,112 @@ def cast_to_silver_schema(source_df, silver_table_name):
     dq_metrics = source_df.select(*dq_agg_exprs).collect()[0].asDict()
     return silver_df, dq_metrics
 
-# COMMAND ----------
 
-for table_name in tables:
-    bronze_table = f"`{catalog}`.`{bronze_schema}`.`{table_name}`"
-    silver_table = f"`{catalog}`.`{silver_schema}`.`{table_name}`"
 
-    start_time = datetime.now()
-    success = 0
-    failure_reason = None
-    record_count = 0
+if __name__ == '__main__':
+    dbutils.widgets.text("job_id", "", "Databricks Job ID")
+    dbutils.widgets.text("job_run_id", "", "Databricks Job Run ID")
+    dbutils.widgets.text("task_id", "", "Databricks Task ID")
+    dbutils.widgets.text("task_run_id", "", "Databricks Task Run ID")
+    dbutils.widgets.dropdown("fail_on_cast_errors", "false", ["true", "false"], "Fail On Cast Errors")
+    dbutils.widgets.text("cast_error_max_rows", "0", "Cast Error Max Rows")
+    dbutils.widgets.text("cast_error_max_pct", "0", "Cast Error Max Percent")
 
-    print(f"\n[START] {table_name}")
+    job_ids = {
+        "job_id": dbutils.widgets.get("job_id").strip(),
+        "job_run_id": dbutils.widgets.get("job_run_id").strip(),
+        "task_id": dbutils.widgets.get("task_id").strip(),
+        "task_run_id": dbutils.widgets.get("task_run_id").strip(),
+    }
 
-    try:
-        bronze_df = spark.table(bronze_table)
-        silver_df, dq_metrics = cast_to_silver_schema(bronze_df, silver_table)
+    fail_on_cast_errors = dbutils.widgets.get("fail_on_cast_errors").strip().lower() == "true"
+    cast_error_max_rows = int(dbutils.widgets.get("cast_error_max_rows").strip() or "0")
+    cast_error_max_pct = float(dbutils.widgets.get("cast_error_max_pct").strip() or "0")
 
-        src_count = int(dq_metrics.get("total_rows") or 0)
-        cast_error_rows = int(dq_metrics.get("cast_error_rows") or 0)
-        cast_error_pct = (cast_error_rows / src_count * 100.0) if src_count > 0 else 0.0
+    tables = resolve_tables_for_ingestion()
 
-        column_failures = {
-            k.replace("__cast_fail", ""): int(v or 0)
-            for k, v in dq_metrics.items()
-            if k.endswith("__cast_fail") and int(v or 0) > 0
-        }
+    print(
+        f"[INFO] catalog={catalog} source_schema={bronze_schema} target_schema={silver_schema} "
+        f"fail_on_cast_errors={fail_on_cast_errors} cast_error_max_rows={cast_error_max_rows} "
+        f"cast_error_max_pct={cast_error_max_pct} tables={len(tables)}"
+    )
 
-        if cast_error_rows > 0:
-            top_cols = sorted(column_failures.items(), key=lambda x: x[1], reverse=True)[:10]
-            message = (
-                f"Cast validation issue for {table_name}: "
-                f"cast_error_rows={cast_error_rows} ({cast_error_pct:.4f}%), "
-                f"top_columns={top_cols}"
+    # Ensure ETL log table exists in Silver schema.
+    ensure_etl_log_table_exists(catalog, etl_log_schema, env="test")
+
+
+    for table_name in tables:
+        bronze_table = f"`{catalog}`.`{bronze_schema}`.`{table_name}`"
+        silver_table = f"`{catalog}`.`{silver_schema}`.`{table_name}`"
+
+        start_time = datetime.now()
+        success = 0
+        failure_reason = None
+        record_count = 0
+
+        print(f"\n[START] {table_name}")
+
+        try:
+            bronze_df = spark.table(bronze_table)
+            silver_df, dq_metrics = cast_to_silver_schema(bronze_df, silver_table)
+
+            src_count = int(dq_metrics.get("total_rows") or 0)
+            cast_error_rows = int(dq_metrics.get("cast_error_rows") or 0)
+            cast_error_pct = (cast_error_rows / src_count * 100.0) if src_count > 0 else 0.0
+
+            column_failures = {
+                k.replace("__cast_fail", ""): int(v or 0)
+                for k, v in dq_metrics.items()
+                if k.endswith("__cast_fail") and int(v or 0) > 0
+            }
+
+            if cast_error_rows > 0:
+                top_cols = sorted(column_failures.items(), key=lambda x: x[1], reverse=True)[:10]
+                message = (
+                    f"Cast validation issue for {table_name}: "
+                    f"cast_error_rows={cast_error_rows} ({cast_error_pct:.4f}%), "
+                    f"top_columns={top_cols}"
+                )
+                print(f"[WARN] {message}")
+
+                threshold_exceeded = (
+                    (cast_error_max_rows > 0 and cast_error_rows > cast_error_max_rows)
+                    or (cast_error_max_pct > 0 and cast_error_pct > cast_error_max_pct)
+                    or ((cast_error_max_rows == 0 and cast_error_max_pct == 0) and fail_on_cast_errors)
+                )
+                if fail_on_cast_errors and threshold_exceeded:
+                    raise ValueError(message)
+
+            # Direct Bronze -> Silver write with no staging/quarantine tables.
+            (
+                silver_df.write
+                .format("delta")
+                .mode("overwrite")
+                .option("overwriteSchema", "true")
+                .saveAsTable(silver_table)
             )
-            print(f"[WARN] {message}")
 
-            threshold_exceeded = (
-                (cast_error_max_rows > 0 and cast_error_rows > cast_error_max_rows)
-                or (cast_error_max_pct > 0 and cast_error_pct > cast_error_max_pct)
-                or ((cast_error_max_rows == 0 and cast_error_max_pct == 0) and fail_on_cast_errors)
+            record_count = src_count
+            success = 1
+            print(f"[DONE] {table_name} | bronze_rows={src_count:,} | silver_rows={record_count:,}")
+
+        except Exception as e:
+            failure_reason = str(e)
+            print(f"[FAILURE] {table_name} | {failure_reason}")
+            raise
+
+        finally:
+            write_etl_log(
+                catalog, silver_schema,
+                job_ids["job_id"], job_ids["job_run_id"],
+                job_ids["task_id"], job_ids["task_run_id"],
+                start_time, datetime.now(),
+                source_file_path=None,
+                source_table=bronze_table,
+                target_table=silver_table,
+                success=success,
+                failure_reason=failure_reason,
+                record_count=record_count
             )
-            if fail_on_cast_errors and threshold_exceeded:
-                raise ValueError(message)
 
-        # Direct Bronze -> Silver write with no staging/quarantine tables.
-        (
-            silver_df.write
-            .format("delta")
-            .mode("overwrite")
-            .option("overwriteSchema", "true")
-            .saveAsTable(silver_table)
-        )
-
-        record_count = src_count
-        success = 1
-        print(f"[DONE] {table_name} | bronze_rows={src_count:,} | silver_rows={record_count:,}")
-
-    except Exception as e:
-        failure_reason = str(e)
-        print(f"[FAILURE] {table_name} | {failure_reason}")
-        raise
-
-    finally:
-        write_etl_log(
-            catalog, silver_schema,
-            job_ids["job_id"], job_ids["job_run_id"],
-            job_ids["task_id"], job_ids["task_run_id"],
-            start_time, datetime.now(),
-            source_file_path=None,
-            source_table=bronze_table,
-            target_table=silver_table,
-            success=success,
-            failure_reason=failure_reason,
-            record_count=record_count
-        )
-
-print("\n[COMPLETE] Bronze-to-Silver direct ingestion finished for all tables.")
+    print("\n[COMPLETE] Bronze-to-Silver direct ingestion finished for all tables.")

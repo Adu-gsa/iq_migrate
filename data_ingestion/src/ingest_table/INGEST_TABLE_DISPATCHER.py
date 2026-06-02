@@ -1,18 +1,13 @@
-# Databricks notebook source
-# MAGIC %md
-# MAGIC # Bronze Ingestion Dispatcher
-# MAGIC
-# MAGIC This notebook provides a single workflow entry point for all Bronze ingest tables.
-# MAGIC
-# MAGIC How it works:
-# MAGIC 1. The workflow passes `table_name` (or runs all tables with `run_mode=all`).
-# MAGIC 2. The dispatcher resolves the target ingest notebook path internally.
-# MAGIC 3. It forwards shared runtime widgets (`env`, `schema`, and job/task IDs).
-# MAGIC
-# MAGIC Required widget for single-table execution:
-# MAGIC - `table_name`: target table key such as `catalog_832`, `bpa_header`, or `adv_product`.
+"""
+Bronze Ingestion Dispatcher
+This notebook provides a single workflow entry point for all Bronze ingest tables.
+How it works:
+1. The workflow passes `table_name` (or runs all tables with `run_mode=all`).
+2. The dispatcher resolves the target ingest notebook path internally.
+"""
 
-# COMMAND ----------
+
+
 
 import importlib.util
 import os
@@ -186,48 +181,8 @@ except Exception as exc:
     _install_local_fallbacks()
     print("[INFO] Local fallback EnvironmentConfig and ETL utils installed.")
 
-# COMMAND ----------
 
 # Define unified workflow widgets for this notebook.
-try:
-    dbutils.widgets.removeAll()
-except Exception:
-    pass
-
-dbutils.widgets.dropdown("env", "test", ["dev", "test", "prod"], "Environment")
-dbutils.widgets.text("schema", "bronze", "Target Schema")
-dbutils.widgets.dropdown("run_mode", "single", ["single", "all"], "Run Mode")
-dbutils.widgets.text("table_name", "", "Table Name (single mode)")
-dbutils.widgets.dropdown("fail_fast", "true", ["true", "false"], "Fail Fast (all mode)")
-
-dbutils.widgets.text("job_id", "", "Databricks Job ID")
-dbutils.widgets.text("job_run_id", "", "Databricks Job Run ID")
-dbutils.widgets.text("task_id", "", "Databricks Task ID")
-dbutils.widgets.text("task_run_id", "", "Databricks Task Run ID")
-
-env = EnvironmentConfig.get_environment(dbutils.widgets.get("env"))
-schema = dbutils.widgets.get("schema").strip() or "bronze"
-catalog = EnvironmentConfig.get_catalog(env)
-run_mode = dbutils.widgets.get("run_mode").strip().lower()
-table_name = dbutils.widgets.get("table_name")
-fail_fast = dbutils.widgets.get("fail_fast").strip().lower() == "true"
-
-job_ids = {
-    "job_id": dbutils.widgets.get("job_id").strip(),
-    "job_run_id": dbutils.widgets.get("job_run_id").strip(),
-    "task_id": dbutils.widgets.get("task_id").strip(),
-    "task_run_id": dbutils.widgets.get("task_run_id").strip(),
-}
-
-print(f"[INFO] env={env} catalog={catalog} schema={schema} run_mode={run_mode}")
-
-# COMMAND ----------
-
-from datetime import datetime
-from typing import Dict, List
-from pyspark.sql import functions as F
-from pyspark.sql.types import StructType, StructField, StringType
-
 class BronzeIngestion:
     # Executes one table ingestion flow: read, enrich metadata, write Delta, archive, and log.
     SOURCE_FILE_FORMAT = "csv"
@@ -354,9 +309,6 @@ def run_bronze_ingestion(table_name: str, source_schema: StructType, source_fold
     }
     BronzeIngestion(spark, source_schema, config).run()
 
-# COMMAND ----------
-
-# Schema builders inlined from _generated_schemas.py — no filesystem access required.
 
 def build_schema_adv_product():
     return StructType([
@@ -994,36 +946,6 @@ def build_schema_zone_price():
         StructField("MFR_NAME",      StringType(), True),
     ])
 
-print("[INFO] All 19 schema builders defined.")
-
-# COMMAND ----------
-
-SOURCE_FOLDER_OVERRIDES = {
-    "adv_product": "ADV_PRODUCT",
-}
-
-SCHEMA_BUILDERS = {
-    "adv_product": build_schema_adv_product,
-    "bpa_header": build_schema_bpa_header,
-    "bpa_item": build_schema_bpa_item,
-    "bpa_item_price": build_schema_bpa_item_price,
-    "catalog_832": build_schema_catalog_832,
-    "contract_zone": build_schema_contract_zone,
-    "contracts": build_schema_contracts,
-    "gsin_hide_remove": build_schema_gsin_hide_remove,
-    "gsin_hide_remove_hist": build_schema_gsin_hide_remove_hist,
-    "item_xref": build_schema_item_xref,
-    "item_xref_attributes": build_schema_item_xref_attributes,
-    "mp_product": build_schema_mp_product,
-    "order_status": build_schema_order_status,
-    "price_discount": build_schema_price_discount,
-    "product_file": build_schema_product_file,
-    "sin": build_schema_sin,
-    "sin_limit": build_schema_sin_limit,
-    "suspend_contract": build_schema_suspend_contract,
-    "zone_price": build_schema_zone_price,
-}
-
 class BronzeIngestionDispatcher:
     # Routes table_name requests to inlined schemas and executes Bronze ingestion.
 
@@ -1066,12 +988,82 @@ class BronzeIngestionDispatcher:
             print(f"[WARN] Completed with failures: {failed}")
         print(f"[COMPLETE] run_all finished. failed_count={len(failed)}")
 
-# COMMAND ----------
 
-dispatcher = BronzeIngestionDispatcher()
-if run_mode == "all":
-    dispatcher.run_all(fail_fast=fail_fast)
-else:
-    dispatcher.run_table(table_name)
 
-print("[COMPLETE] Unified Bronze ingestion notebook finished.")
+if __name__ == '__main__':
+    try:
+        dbutils.widgets.removeAll()
+    except Exception:
+        pass
+
+    dbutils.widgets.dropdown("env", "test", ["dev", "test", "prod"], "Environment")
+    dbutils.widgets.text("schema", "bronze", "Target Schema")
+    dbutils.widgets.dropdown("run_mode", "single", ["single", "all"], "Run Mode")
+    dbutils.widgets.text("table_name", "", "Table Name (single mode)")
+    dbutils.widgets.dropdown("fail_fast", "true", ["true", "false"], "Fail Fast (all mode)")
+
+    dbutils.widgets.text("job_id", "", "Databricks Job ID")
+    dbutils.widgets.text("job_run_id", "", "Databricks Job Run ID")
+    dbutils.widgets.text("task_id", "", "Databricks Task ID")
+    dbutils.widgets.text("task_run_id", "", "Databricks Task Run ID")
+
+    env = EnvironmentConfig.get_environment(dbutils.widgets.get("env"))
+    schema = dbutils.widgets.get("schema").strip() or "bronze"
+    catalog = EnvironmentConfig.get_catalog(env)
+    run_mode = dbutils.widgets.get("run_mode").strip().lower()
+    table_name = dbutils.widgets.get("table_name")
+    fail_fast = dbutils.widgets.get("fail_fast").strip().lower() == "true"
+
+    job_ids = {
+        "job_id": dbutils.widgets.get("job_id").strip(),
+        "job_run_id": dbutils.widgets.get("job_run_id").strip(),
+        "task_id": dbutils.widgets.get("task_id").strip(),
+        "task_run_id": dbutils.widgets.get("task_run_id").strip(),
+    }
+
+    print(f"[INFO] env={env} catalog={catalog} schema={schema} run_mode={run_mode}")
+
+
+    from datetime import datetime
+    from typing import Dict, List
+    from pyspark.sql import functions as F
+    from pyspark.sql.types import StructType, StructField, StringType
+
+    # Schema builders inlined from _generated_schemas.py — no filesystem access required.
+
+    print("[INFO] All 19 schema builders defined.")
+
+
+    SOURCE_FOLDER_OVERRIDES = {
+        "adv_product": "ADV_PRODUCT",
+    }
+
+    SCHEMA_BUILDERS = {
+        "adv_product": build_schema_adv_product,
+        "bpa_header": build_schema_bpa_header,
+        "bpa_item": build_schema_bpa_item,
+        "bpa_item_price": build_schema_bpa_item_price,
+        "catalog_832": build_schema_catalog_832,
+        "contract_zone": build_schema_contract_zone,
+        "contracts": build_schema_contracts,
+        "gsin_hide_remove": build_schema_gsin_hide_remove,
+        "gsin_hide_remove_hist": build_schema_gsin_hide_remove_hist,
+        "item_xref": build_schema_item_xref,
+        "item_xref_attributes": build_schema_item_xref_attributes,
+        "mp_product": build_schema_mp_product,
+        "order_status": build_schema_order_status,
+        "price_discount": build_schema_price_discount,
+        "product_file": build_schema_product_file,
+        "sin": build_schema_sin,
+        "sin_limit": build_schema_sin_limit,
+        "suspend_contract": build_schema_suspend_contract,
+        "zone_price": build_schema_zone_price,
+    }
+
+    dispatcher = BronzeIngestionDispatcher()
+    if run_mode == "all":
+        dispatcher.run_all(fail_fast=fail_fast)
+    else:
+        dispatcher.run_table(table_name)
+
+    print("[COMPLETE] Unified Bronze ingestion notebook finished.")
