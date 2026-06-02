@@ -1,7 +1,7 @@
-Ingest_foia_to_bronze_layer_Optimized.yaml
 MANIFEST.in
 README.md
 setup.py
+resources/Ingest_foia_to_bronze_layer_Optimized.yaml
 src/bronze_silver/BRONZE_TO_SILVER_INGESTION.py
 src/bronze_silver/ETL_LOG_DDL_SILVER.py
 src/bronze_silver/SILVER_LAYER_DDL.py
