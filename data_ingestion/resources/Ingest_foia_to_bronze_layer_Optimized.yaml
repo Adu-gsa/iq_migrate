@@ -332,6 +332,7 @@ resources:
             package_name: data_ingestion
             entry_point: bronze_to_silver_ingestion
             parameters:
+              --env "{{job.parameters.env}}"
               --job_id "{{job.id}}"
               --task_id "{{task.name}}"
               --task_run_id "{{task.run_id}}"

@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: data_ingestion
+Version: 0.1.0
+Summary: FOIA Data Ingestion Project
+Author: Your Name
+Requires-Python: >=3.10
+Dynamic: author
+Dynamic: requires-python
+Dynamic: summary
