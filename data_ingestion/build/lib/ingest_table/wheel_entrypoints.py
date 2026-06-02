@@ -1,4 +1,20 @@
+import os
+import platform
 import runpy
+import sys
+from datetime import datetime
+
+
+def wheel_smoke_test():
+    """Minimal wheel entry point to validate Python wheel task bootstrap only."""
+    print("[SMOKE] wheel_smoke_test started")
+    print(f"[SMOKE] utc_ts={datetime.utcnow().isoformat()}Z")
+    print(f"[SMOKE] python={sys.version.split()[0]}")
+    print(f"[SMOKE] executable={sys.executable}")
+    print(f"[SMOKE] platform={platform.platform()}")
+    print(f"[SMOKE] cwd={os.getcwd()}")
+    print(f"[SMOKE] sys_path_entries={len(sys.path)}")
+    print("[SMOKE] wheel_smoke_test completed")
 
 
 def ingest_table_dispatcher():
