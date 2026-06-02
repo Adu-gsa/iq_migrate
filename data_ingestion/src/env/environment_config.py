@@ -27,9 +27,9 @@ class EnvironmentConfig:
     }
 
     # ---- Databricks Workspace URLs ----
-    DEV_URL  = "https://adb-dev-foia.cloud.databricks.com"
-    TEST_URL = "https://adb-test-foia.cloud.databricks.com"
-    PROD_URL = "https://adb-prod-foia.cloud.databricks.com"
+    DEV_URL  = "https://gsa-fas-advantage-np.cloud.databricks.com"
+    TEST_URL = "https://gsa-fas-advantage-np.cloud.databricks.com"
+    PROD_URL = "https://gsa-fas-advantage.cloud.databricks.com"
 
     _URL_MAP = {
         DEV:  DEV_URL,
