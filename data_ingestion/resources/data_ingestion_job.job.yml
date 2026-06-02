@@ -1,0 +1,24 @@
+resources:
+  jobs:
+    data_ingestion_daily_job:
+      name: data_ingestion_daily_job
+      trigger:
+        periodic:
+          interval: 1
+          unit: DAYS
+      email_notifications:
+        on_failure:
+          - svc_fas_advantage_foia_etl_user_tst@gsa.gov
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.silver_schema}
+      tasks:
+        - task_key: refresh_data_ingestion_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.data_ingestion_pipeline.id}
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "2"

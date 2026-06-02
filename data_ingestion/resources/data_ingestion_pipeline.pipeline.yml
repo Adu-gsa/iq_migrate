@@ -1,0 +1,11 @@
+resources:
+  pipelines:
+    data_ingestion_pipeline:
+      name: data_ingestion_pipeline
+      catalog: ${var.catalog}
+      schema: ${var.silver_schema}
+      serverless: true
+      continuous: true
+      root_path: "../.."
+      libraries:
+        - whl: ../../dist/data_ingestion-0.1.0-py3-none-any.whl

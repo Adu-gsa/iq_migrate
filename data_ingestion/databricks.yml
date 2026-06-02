@@ -1,0 +1,79 @@
+# This is a Databricks asset bundle definition for data_ingestion.
+bundle:
+  name: data_ingestion
+
+include:
+  - resources/*.yml
+  - resources/*.yaml
+  - resources/*/*.yml
+  - resources/*/*.yaml
+
+variables:
+  catalog:
+    description: The catalog to use
+  schema:
+    description: The default schema for pipeline resources
+  bronze_schema:
+    description: Bronze schema for ingestion tasks
+  silver_schema:
+    description: Silver schema for downstream tasks
+
+  s3_bucket:
+    description: The S3 bucket to use for data ingestion
+
+  cluster_policy:
+    description: The cluster policy ID to use
+
+  node_type_id:
+    description: The node type for the cluster
+
+  spark_version:
+    description: The Databricks runtime version
+
+  service_principal_name:
+    description: The service principal for job runs
+
+  custom_tags:
+    description: Custom tags for the cluster
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://gsa-fas-advantage-np.cloud.databricks.com
+    variables:
+      catalog: foia_tst
+      schema: silver
+      bronze_schema: bronze
+      silver_schema: silver
+      s3_bucket: s3://712311343692-fcs-datalake-np
+      cluster_policy: 0001188AD6ACDC6F
+      node_type_id: r5n.2xlarge
+      spark_version: 17.3.x-scala2.13
+      service_principal_name: f685fa44-7559-41fd-91cf-353e5cba24d9
+      custom_tags:
+        WORKSPACE: fas-advantage-np
+    permissions:
+      - user_name: svc_fas_advantage_foia_etl_user_tst
+        level: CAN_MANAGE
+  prod:
+    mode: production
+    workspace:
+      host:  https://gsa-fas-advantage.cloud.databricks.com/
+      root_path: /Workspace/Users/<your-user>/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: foia_prd
+      schema: silver
+      bronze_schema: bronze
+      silver_schema: silver
+      s3_bucket: s3://712311343692-fcs-datalake-prd
+      cluster_policy: 0001188AD6ACDC6F
+      node_type_id: r5n.2xlarge
+      spark_version: 17.3.x-scala2.13
+      service_principal_name: f685fa44-7559-41fd-91cf-353e5cba24d9
+      custom_tags:
+        WORKSPACE: fas-advantage
+    permissions:
+      - user_name: svc_fas_advantage_foia_etl_user_prd
+        level: CAN_MANAGE
