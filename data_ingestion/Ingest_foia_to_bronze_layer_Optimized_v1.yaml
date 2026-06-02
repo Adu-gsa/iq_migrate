@@ -1,410 +1,411 @@
-name: Ingest_foia_to_bronze_layer_Optimized
-tasks:
-  - task_key: Ingest_foia_gsin_hide_remove_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name gsin_hide_remove
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_gsin_hide_remove_hist_table
-    depends_on:
+resources:
+  jobs:
+    Ingest_foia_to_bronze_layer_Optimized:
+      name: Ingest_foia_to_bronze_layer_Optimized
+      tasks:
       - task_key: Ingest_foia_gsin_hide_remove_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name gsin_hide_remove_hist
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_catalog_832_table
-    depends_on:
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: gsin_hide_remove
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
       - task_key: Ingest_foia_gsin_hide_remove_hist_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name catalog_832
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_sin_limit_table
-    depends_on:
-      - task_key: Ingest_foia_gsin_hide_remove_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name sin_limit
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_contract_table
-    depends_on:
-      - task_key: Ingest_foia_sin_limit_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name contracts
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_mp_product_table
-    depends_on:
-      - task_key: Ingest_foia_contract_table
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: gsin_hide_remove_hist
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+        depends_on:
+        - task_key: Ingest_foia_gsin_hide_remove_table
       - task_key: Ingest_foia_catalog_832_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name mp_product
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_mp_product_file_table
-    depends_on:
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: catalog_832
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+        depends_on:
+        - task_key: Ingest_foia_gsin_hide_remove_hist_table
+      - task_key: Ingest_foia_sin_limit_table
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: sin_limit
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+        depends_on:
+        - task_key: Ingest_foia_gsin_hide_remove_table
+      - task_key: Ingest_foia_contract_table
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: contracts
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+        depends_on:
+        - task_key: Ingest_foia_sin_limit_table
       - task_key: Ingest_foia_mp_product_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name product_file
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_order_status_table
-    depends_on:
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: mp_product
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+        depends_on:
+        - task_key: Ingest_foia_contract_table
+        - task_key: Ingest_foia_catalog_832_table
       - task_key: Ingest_foia_mp_product_file_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name order_status
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_sin_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name sin
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_contract_zone
-    depends_on:
-      - task_key: Ingest_foia_sin_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name contract_zone
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_suspend_contract_table
-    depends_on:
-      - task_key: Ingest_foia_contract_zone
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name suspend_contract
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_bpa_header_table
-    depends_on:
-      - task_key: Ingest_foia_suspend_contract_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name bpa_header
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_bpa_item_table
-    depends_on:
-      - task_key: Ingest_foia_bpa_header_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name bpa_item
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_bpa_item_price_table
-    depends_on:
-      - task_key: Ingest_foia_suspend_contract_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name bpa_item_price
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_price_discount_table
-    depends_on:
-      - task_key: Ingest_foia_bpa_item_price_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name price_discount
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_zone_price_table
-    depends_on:
-      - task_key: Ingest_foia_price_discount_table
-      - task_key: Ingest_foia_bpa_item_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name zone_price
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_adv_product_table
-    depends_on:
-      - task_key: Ingest_foia_zone_price_table
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: product_file
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+        depends_on:
+        - task_key: Ingest_foia_mp_product_table
       - task_key: Ingest_foia_order_status_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name adv_product
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_item_xref_attributes_table
-    depends_on:
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: order_status
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+        depends_on:
+        - task_key: Ingest_foia_mp_product_file_table
+      - task_key: Ingest_foia_sin_table
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: sin
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+      - task_key: Ingest_foia_contract_zone
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: contract_zone
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+        depends_on:
+        - task_key: Ingest_foia_sin_table
+      - task_key: Ingest_foia_suspend_contract_table
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: suspend_contract
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+        depends_on:
+        - task_key: Ingest_foia_contract_zone
+      - task_key: Ingest_foia_bpa_header_table
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: bpa_header
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+        depends_on:
+        - task_key: Ingest_foia_suspend_contract_table
+      - task_key: Ingest_foia_bpa_item_table
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: bpa_item
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+        depends_on:
+        - task_key: Ingest_foia_bpa_header_table
+      - task_key: Ingest_foia_bpa_item_price_table
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: bpa_item_price
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+        depends_on:
+        - task_key: Ingest_foia_suspend_contract_table
+      - task_key: Ingest_foia_price_discount_table
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: price_discount
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+        depends_on:
+        - task_key: Ingest_foia_bpa_item_price_table
+      - task_key: Ingest_foia_zone_price_table
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: zone_price
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+        depends_on:
+        - task_key: Ingest_foia_price_discount_table
+        - task_key: Ingest_foia_bpa_item_table
       - task_key: Ingest_foia_adv_product_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name item_xref_attributes
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: Ingest_foia_item_xref_table
-    depends_on:
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: adv_product
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+        depends_on:
+        - task_key: Ingest_foia_zone_price_table
+        - task_key: Ingest_foia_order_status_table
       - task_key: Ingest_foia_item_xref_attributes_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: ingest_table_dispatcher
-      parameters:
-        --env "{{job.parameters.env}}"
-        --schema bronze
-        --run_mode single
-        --table_name item_xref
-        --fail_fast true
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-  - task_key: bronze_to_silver_load
-    depends_on:
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: item_xref_attributes
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+        depends_on:
+        - task_key: Ingest_foia_adv_product_table
       - task_key: Ingest_foia_item_xref_table
-    python_wheel_task:
-      package_name: data_ingestion
-      entry_point: bronze_to_silver_ingestion
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: ingest_table_dispatcher
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            schema: bronze
+            run_mode: single
+            table_name: item_xref
+            fail_fast: 'true'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+        depends_on:
+        - task_key: Ingest_foia_item_xref_attributes_table
+      - task_key: bronze_to_silver_load
+        depends_on:
+        - task_key: Ingest_foia_item_xref_table
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: bronze_to_silver_ingestion
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            job_id: '{{job.id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            job_run_id: '{{job.run_id}}'
+            fail_on_cast_errors: 'false'
+            cast_error_max_rows: '0'
+            cast_error_max_pct: '0'
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
+      job_clusters:
+      - job_cluster_key: Job_cluster
+        new_cluster:
+          cluster_name: ''
+          spark_version: 17.3.x-scala2.13
+          aws_attributes:
+            first_on_demand: 1
+            availability: SPOT_WITH_FALLBACK
+            zone_id: auto
+            spot_bid_price_percent: 100
+            ebs_volume_type: GENERAL_PURPOSE_SSD
+            ebs_volume_count: 3
+            ebs_volume_size: 100
+          node_type_id: r5n.2xlarge
+          custom_tags:
+            WORKSPACE: fas-advantage-np
+          enable_elastic_disk: true
+          policy_id: 0001188AD6ACDC6F
+          data_security_mode: SINGLE_USER
+          runtime_engine: STANDARD
+          num_workers: 4
+      queue:
+        enabled: true
       parameters:
-        --job_id "{{job.id}}"
-        --task_id "{{task.name}}"
-        --task_run_id "{{task.run_id}}"
-        --job_run_id "{{job.run_id}}"
-        --fail_on_cast_errors false
-        --cast_error_max_rows 0
-        --cast_error_max_pct 0
-    libraries:
-      - whl: dbfs:/FileStore/wheels/data_ingestion-0.1.0-py3-none-any.whl
-    job_cluster_key: Job_cluster
-job_clusters:
-  - job_cluster_key: Job_cluster
-    new_cluster:
-      cluster_name: ""
-      spark_version: 17.3.x-scala2.13
-      aws_attributes:
-        first_on_demand: 1
-        availability: SPOT_WITH_FALLBACK
-        zone_id: auto
-        spot_bid_price_percent: 100
-        ebs_volume_type: GENERAL_PURPOSE_SSD
-        ebs_volume_count: 3
-        ebs_volume_size: 100
-      node_type_id: r5n.2xlarge
-      custom_tags:
-        WORKSPACE: fas-advantage-np
-      enable_elastic_disk: true
-      policy_id: 0001188AD6ACDC6F
-      data_security_mode: SINGLE_USER
-      runtime_engine: STANDARD
-      kind: CLASSIC_PREVIEW
-      is_single_node: false
-      num_workers: 4
-queue:
-  enabled: true
-parameters:
-  - name: env
-    default: test
-run_as:
-  service_principal_name: f685fa44-7559-41fd-91cf-353e5cba24d9
-
+      - name: env
+        default: test
+      run_as:
+        service_principal_name: f685fa44-7559-41fd-91cf-353e5cba24d9
