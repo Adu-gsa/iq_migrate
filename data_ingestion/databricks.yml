@@ -3,10 +3,9 @@ bundle:
   name: data_ingestion
 
 include:
-  - resources/*.yml
-  - resources/*.yaml
-  - resources/*/*.yml
-  - resources/*/*.yaml
+  - resources/data_ingestion_job.job.yml
+  - resources/data_ingestion_pipeline.pipeline.yml
+  - resources/Ingest_foia_to_bronze_layer_Optimized.yaml
 
 variables:
   catalog:

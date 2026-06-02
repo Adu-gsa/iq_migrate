@@ -1,25 +1,25 @@
 dev:
-	catalog: foia_tst
-	schema: silver
-	bronze_schema: bronze
-	silver_schema: silver
-	s3_bucket: s3://712311343692-fcs-datalake-np
-	cluster_policy: 0001188AD6ACDC6F
-	node_type_id: r5n.2xlarge
-	spark_version: 17.3.x-scala2.13
-	service_principal_name: f685fa44-7559-41fd-91cf-353e5cba24d9
-	custom_tags:
-		WORKSPACE: fas-advantage-np
+  catalog: foia_tst
+  schema: silver
+  bronze_schema: bronze
+  silver_schema: silver
+  s3_bucket: s3://712311343692-fcs-datalake-np
+  cluster_policy: 0001188AD6ACDC6F
+  node_type_id: r5n.2xlarge
+  spark_version: 17.3.x-scala2.13
+  service_principal_name: f685fa44-7559-41fd-91cf-353e5cba24d9
+  custom_tags:
+    WORKSPACE: fas-advantage-np
 
 prod:
-	catalog: foia_prd
-	schema: silver
-	bronze_schema: bronze
-	silver_schema: silver
-	s3_bucket: s3://712311343692-fcs-datalake-prd
-	cluster_policy: 0001188AD6ACDC6F
-	node_type_id: r5n.2xlarge
-	spark_version: 17.3.x-scala2.13
-	service_principal_name: f685fa44-7559-41fd-91cf-353e5cba24d9
-	custom_tags:
-		WORKSPACE: fas-advantage
+  catalog: foia_prd
+  schema: silver
+  bronze_schema: bronze
+  silver_schema: silver
+  s3_bucket: s3://712311343692-fcs-datalake-prd
+  cluster_policy: 0001188AD6ACDC6F
+  node_type_id: r5n.2xlarge
+  spark_version: 17.3.x-scala2.13
+  service_principal_name: f685fa44-7559-41fd-91cf-353e5cba24d9
+  custom_tags:
+    WORKSPACE: fas-advantage
