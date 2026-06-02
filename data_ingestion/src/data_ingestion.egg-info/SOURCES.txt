@@ -1,5 +1,6 @@
 MANIFEST.in
 README.md
+pyproject.toml
 setup.py
 resources/Ingest_foia_to_bronze_layer_Optimized.yaml
 src/bronze_silver/BRONZE_TO_SILVER_INGESTION.py

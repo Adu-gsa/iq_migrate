@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "data_ingestion"
+version = "0.1.0"
+description = "FOIA Data Ingestion Project"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+  { name = "Your Name" }
+]
+dependencies = []
+
+[project.scripts]
+ingest_table_dispatcher = "ingest_table.wheel_entrypoints:ingest_table_dispatcher"
+bronze_to_silver_ingestion = "ingest_table.wheel_entrypoints:bronze_to_silver_ingestion"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]

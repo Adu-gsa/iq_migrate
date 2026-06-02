@@ -6,10 +6,17 @@ FOIA Data Ingestion Project packaged and deployed as a Python wheel for Databric
 ## Build the wheel
 
 ```sh
-python setup.py bdist_wheel
+python -m build --wheel
 ```
 
 The wheel file will be created in the `dist/` directory.
+
+If `build` is not installed:
+
+```sh
+pip install build
+python -m build --wheel
+```
 
 ## Install and validate the wheel locally
 
