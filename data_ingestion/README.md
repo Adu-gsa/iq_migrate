@@ -3,6 +3,72 @@
 
 FOIA Data Ingestion Project packaged and deployed as a Python wheel for Databricks jobs and pipelines.
 
+## End-to-end process flow
+
+### Overview
+
+This pipeline ingests FAS Advantage FOIA data from flat files (CSV/TXT) into a Databricks Lakehouse using a medallion architecture (Bronze → Silver). The entire process is packaged as a Python wheel and orchestrated via Databricks job tasks.
+
+```
+  Source Files (.txt)          Bronze Layer (Delta)         Silver Layer (Delta)
+  ┌──────────────────┐         ┌──────────────────┐         ┌──────────────────┐
+  │ ^|~ delimited    │────────>│ Raw data as-is   │────────>│ Typed & cleaned  │
+  │ files on Volumes │  Read   │ + ingest metadata │  Cast   │ production-ready │
+  └──────────────────┘         └──────────────────┘         └──────────────────┘
+         │                              │
+         │                              │
+         v                              v
+  ┌──────────────────┐         ┌──────────────────┐
+  │ Archived to      │         │ ETL log table    │
+  │ outbound folder  │         │ (audit trail)    │
+  └──────────────────┘         └──────────────────┘
+```
+
+### Step-by-step flow
+
+**1. Source files land on Databricks Volumes**
+- Flat files (`.txt`, `^|~` delimited) are placed in `/Volumes/fas_advantage_np/bronze/fas_advantage_s3_np/IQ_RAW_FILES/<table_name>/`
+- One file per table per run
+
+**2. Bronze ingestion (`ingest_table_dispatcher` entry point)**
+- The Databricks job triggers one task per table, each calling the `ingest_table_dispatcher` entry point
+- For each table, the dispatcher:
+  1. Reads the source `.txt` file using the table-specific schema
+  2. Adds metadata columns (`ingest_ts`, `input_file_name`)
+  3. Writes to the Bronze Delta table (full overwrite)
+  4. Archives the source file to the outbound folder with a date partition
+  5. Logs success/failure to the `etl_log` audit table
+- Tables are ingested in a dependency chain (19 tables total):
+  `gsin_hide_remove` → `gsin_hide_remove_hist` → `catalog_832` → ... → `item_xref`
+
+**3. Bronze-to-Silver transformation (`bronze_to_silver_ingestion` entry point)**
+- Runs after all Bronze tables are loaded
+- Reads each Bronze table (all STRING columns)
+- Casts columns to their Silver-layer target types (INT, TIMESTAMP, DECIMAL, etc.)
+- Writes typed data to Silver Delta tables
+
+**4. Environment & catalog resolution**
+- Environment (`dev`, `test`, `prod`) is passed as a job parameter
+- The `EnvironmentConfig` class maps each environment to its Unity Catalog:
+  - `dev` → `foia_dev`
+  - `test` → `foia_tst`
+  - `prod` → `foia_prod`
+
+### Tables ingested
+
+| # | Table                  | # | Table              |
+|---|------------------------|---|--------------------|
+| 1 | gsin_hide_remove       | 11 | suspend_contract  |
+| 2 | gsin_hide_remove_hist  | 12 | bpa_header        |
+| 3 | catalog_832            | 13 | bpa_item          |
+| 4 | sin_limit              | 14 | bpa_item_price    |
+| 5 | contracts              | 15 | price_discount    |
+| 6 | mp_product             | 16 | zone_price        |
+| 7 | product_file           | 17 | adv_product       |
+| 8 | order_status           | 18 | item_xref_attributes |
+| 9 | sin                    | 19 | item_xref         |
+| 10 | contract_zone         |    |                   |
+
 ## Build the wheel
 
 ```sh
