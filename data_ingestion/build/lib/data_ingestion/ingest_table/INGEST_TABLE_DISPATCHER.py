@@ -241,6 +241,7 @@ class BronzeIngestion:
             .option("header", self.SOURCE_HAS_HEADER)
             .option("encoding", self.SOURCE_ENCODING)
             .option("mode", "PERMISSIVE")
+            .option("maxCharsPerColumn", -1)
             .load(source_path)
         )
 
@@ -254,13 +255,16 @@ class BronzeIngestion:
 
     def _write_to_bronze(self, df):
         # Writes transformed dataframe into the Bronze target table.
-        row_count = df.count()
+        # Repartition to spread write workload across all cluster workers.
         (
-            df.write.format("delta")
+            df.repartition(32)
+            .write.format("delta")
             .mode("overwrite")
-            .option("overwriteSchema", "true")
+            .option("mergeSchema", "true")
             .saveAsTable(self.full_target_table)
         )
+        # Get row count from the written Delta table instead of scanning the DataFrame twice.
+        row_count = self.spark.table(self.full_target_table).count()
         return row_count
 
     def run(self):
