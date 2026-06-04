@@ -32,13 +32,31 @@ silver_schema = "silver"
 etl_log_schema = "silver"
 
 
+def _get_spark():
+    """Resolve spark in both notebook and wheel/serverless task contexts."""
+    try:
+        return spark
+    except NameError:
+        from pyspark.sql import SparkSession
+        return SparkSession.getActiveSession()
+
+
+def _get_dbutils():
+    """Resolve dbutils in both notebook and wheel/serverless task contexts."""
+    try:
+        return dbutils
+    except NameError:
+        from databricks.sdk.runtime import dbutils as _dbutils
+        return _dbutils
+
+
 def _str_to_bool(value: str) -> bool:
     return str(value).strip().lower() in {"1", "true", "t", "yes", "y"}
 
 
 def _safe_widget_get(name: str, default: str) -> str:
     try:
-        return dbutils.widgets.get(name).strip()
+        return _get_dbutils().widgets.get(name).strip()
     except Exception:
         return default
 
@@ -65,7 +83,7 @@ def _parse_runtime_args():
 def resolve_tables_for_ingestion(selected_table_name: str = ""):
     # Resolve tables directly from Silver schema so ingestion follows SILVER_LAYER_DDL definitions.
     silver_tables = [
-        r.tableName for r in spark.sql(f"SHOW TABLES IN `{catalog}`.`{silver_schema}`").collect()
+        r.tableName for r in _get_spark().sql(f"SHOW TABLES IN `{catalog}`.`{silver_schema}`").collect()
     ]
 
     excluded = {"etl_log"}
@@ -83,7 +101,7 @@ def resolve_tables_for_ingestion(selected_table_name: str = ""):
     # Only ingest tables that exist in Bronze source schema.
     tables = [
         t for t in candidate_tables
-        if spark.catalog.tableExists(f"`{catalog}`.`{bronze_schema}`.`{t}`")
+        if _get_spark().catalog.tableExists(f"`{catalog}`.`{bronze_schema}`.`{t}`")
     ]
 
     if not tables:
@@ -97,7 +115,7 @@ def resolve_tables_for_ingestion(selected_table_name: str = ""):
 def ensure_etl_log_table_exists(catalog: str, schema: str, env: str):
     # Guaranteed local definition to avoid NameError regardless of %run state.
     full_table_name = f"`{catalog}`.`{schema}`.`etl_log`"
-    spark.sql(f"""
+    _get_spark().sql(f"""
         CREATE TABLE IF NOT EXISTS {full_table_name} (
             job_id            STRING,
             job_run_id        STRING,
@@ -148,7 +166,7 @@ def write_etl_log(
         StructField("record_count", LongType(), True),
     ])
 
-    spark.createDataFrame(log_data, schema=log_schema).write.format("delta").mode("append").saveAsTable(full_log_table)
+    _get_spark().createDataFrame(log_data, schema=log_schema).write.format("delta").mode("append").saveAsTable(full_log_table)
 
 def _empty_to_null(col_expr):
     # Standardize blank strings from Bronze into NULL before casting.
@@ -261,7 +279,7 @@ def _cast_expr(source_column_name, target_type):
 
 def cast_to_silver_schema(source_df, silver_table_name):
     # Build transformed Silver dataframe and cast quality metrics using Silver DDL as the datatype contract.
-    target_schema = spark.table(silver_table_name).schema
+    target_schema = _get_spark().table(silver_table_name).schema
     source_lookup = {c.lower(): c for c in source_df.columns}
     projected_columns = []
     dq_checks = []
@@ -368,7 +386,7 @@ if __name__ == '__main__':
         print(f"\n[START] {table_name}")
 
         try:
-            bronze_df = spark.table(bronze_table)
+            bronze_df = _get_spark().table(bronze_table)
             silver_df, dq_metrics = cast_to_silver_schema(bronze_df, silver_table)
 
             src_count = int(dq_metrics.get("total_rows") or 0)

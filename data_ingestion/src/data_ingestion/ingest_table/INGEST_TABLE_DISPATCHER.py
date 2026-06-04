@@ -18,6 +18,24 @@ from pyspark.sql import functions as F
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, TimestampType, LongType
 
 
+def _get_dbutils():
+    """Resolve dbutils in both notebook and wheel/serverless task contexts."""
+    try:
+        return dbutils  # injected in notebook context
+    except NameError:
+        from databricks.sdk.runtime import dbutils as _dbutils
+        return _dbutils
+
+
+def _get_spark():
+    """Resolve spark in both notebook and wheel/serverless task contexts."""
+    try:
+        return spark  # injected in notebook context
+    except NameError:
+        from pyspark.sql import SparkSession
+        return SparkSession.getActiveSession()
+
+
 def _load_module(module_name: str, file_path: str):
     spec = importlib.util.spec_from_file_location(module_name, file_path)
     if spec is None or spec.loader is None:
@@ -100,7 +118,7 @@ def _install_local_fallbacks():
             )
             USING DELTA
         """
-        spark.sql(ddl)
+        _get_spark().sql(ddl)
 
     def write_etl_log(
         catalog, schema, job_id, job_run_id, task_id, task_run_id,
@@ -130,13 +148,13 @@ def _install_local_fallbacks():
             StructField("failure_reason", StringType(), True),
             StructField("record_count", LongType(), True),
         ])
-        spark.createDataFrame(log_data, schema=log_schema).write.format("delta").mode("append").saveAsTable(full_log_table)
+        _get_spark().createDataFrame(log_data, schema=log_schema).write.format("delta").mode("append").saveAsTable(full_log_table)
 
     def archive_file(source_file_path: str, archive_base_path: str, env: str):
         file_name = source_file_path.split("/")[-1]
         date_partition = datetime.now().strftime("%Y-%m-%d")
         archive_dest_path = f"{archive_base_path}/{env}/{date_partition}/{file_name}"
-        dbutils.fs.mv(source_file_path, archive_dest_path, recurse=False)
+        _get_dbutils().fs.mv(source_file_path, archive_dest_path, recurse=False)
         return archive_dest_path
 
     globals().update({
@@ -147,10 +165,10 @@ def _install_local_fallbacks():
     })
 
 
-notebook_path = dbutils.notebook.entry_point.getDbutils().notebook().getContext().notebookPath().get()
-notebook_dir = notebook_path.rsplit("/", 1)[0]
-
 try:
+    notebook_path = dbutils.notebook.entry_point.getDbutils().notebook().getContext().notebookPath().get()
+    notebook_dir = notebook_path.rsplit("/", 1)[0]
+
     environment_config_path = _find_file_upwards(
         notebook_dir,
         [
@@ -291,7 +309,7 @@ def run_bronze_ingestion(table_name: str, source_schema: StructType, source_fold
         input_folder_path = EnvironmentConfig.get_input_path(env, table_name)
         output_folder_path = EnvironmentConfig.get_output_path(env, table_name)
 
-    txt_files = [f.path for f in dbutils.fs.ls(input_folder_path) if f.name.lower().endswith(".txt")]
+    txt_files = [f.path for f in _get_dbutils().fs.ls(input_folder_path) if f.name.lower().endswith(".txt")]
     if len(txt_files) == 0:
         raise FileNotFoundError(f"No .txt file found in: {input_folder_path}")
     if len(txt_files) > 1:
@@ -310,7 +328,7 @@ def run_bronze_ingestion(table_name: str, source_schema: StructType, source_fold
         "output_folder_path": output_folder_path,
         **job_ids,
     }
-    BronzeIngestion(spark, source_schema, config).run()
+    BronzeIngestion(_get_spark(), source_schema, config).run()
 
 
 def build_schema_adv_product():
@@ -996,34 +1014,44 @@ class BronzeIngestionDispatcher:
 
 
 if __name__ == '__main__':
+    import sys as _sys
+
+    def _get_param(name, default=""):
+        # Notebook context: use dbutils.widgets. Wheel task context: fall back to sys.argv (--key=value).
+        try:
+            return dbutils.widgets.get(name).strip() or default
+        except NameError:
+            for arg in _sys.argv[1:]:
+                if arg.startswith(f"--{name}="):
+                    return arg.split("=", 1)[1].strip() or default
+            return default
+
     try:
         dbutils.widgets.removeAll()
-    except Exception:
-        pass
+        dbutils.widgets.dropdown("env", "test", ["dev", "test", "prod"], "Environment")
+        dbutils.widgets.text("schema", "bronze", "Target Schema")
+        dbutils.widgets.dropdown("run_mode", "single", ["single", "all"], "Run Mode")
+        dbutils.widgets.text("table_name", "", "Table Name (single mode)")
+        dbutils.widgets.dropdown("fail_fast", "true", ["true", "false"], "Fail Fast (all mode)")
+        dbutils.widgets.text("job_id", "", "Databricks Job ID")
+        dbutils.widgets.text("job_run_id", "", "Databricks Job Run ID")
+        dbutils.widgets.text("task_id", "", "Databricks Task ID")
+        dbutils.widgets.text("task_run_id", "", "Databricks Task Run ID")
+    except NameError:
+        pass  # Not in notebook context — parameters come from sys.argv (--key=value)
 
-    dbutils.widgets.dropdown("env", "test", ["dev", "test", "prod"], "Environment")
-    dbutils.widgets.text("schema", "bronze", "Target Schema")
-    dbutils.widgets.dropdown("run_mode", "single", ["single", "all"], "Run Mode")
-    dbutils.widgets.text("table_name", "", "Table Name (single mode)")
-    dbutils.widgets.dropdown("fail_fast", "true", ["true", "false"], "Fail Fast (all mode)")
-
-    dbutils.widgets.text("job_id", "", "Databricks Job ID")
-    dbutils.widgets.text("job_run_id", "", "Databricks Job Run ID")
-    dbutils.widgets.text("task_id", "", "Databricks Task ID")
-    dbutils.widgets.text("task_run_id", "", "Databricks Task Run ID")
-
-    env = EnvironmentConfig.get_environment(dbutils.widgets.get("env"))
-    schema = dbutils.widgets.get("schema").strip() or "bronze"
+    env = EnvironmentConfig.get_environment(_get_param("env", "test"))
+    schema = _get_param("schema", "bronze")
     catalog = EnvironmentConfig.get_catalog(env)
-    run_mode = dbutils.widgets.get("run_mode").strip().lower()
-    table_name = dbutils.widgets.get("table_name")
-    fail_fast = dbutils.widgets.get("fail_fast").strip().lower() == "true"
+    run_mode = _get_param("run_mode", "single").lower()
+    table_name = _get_param("table_name")
+    fail_fast = _get_param("fail_fast", "true").lower() == "true"
 
     job_ids = {
-        "job_id": dbutils.widgets.get("job_id").strip(),
-        "job_run_id": dbutils.widgets.get("job_run_id").strip(),
-        "task_id": dbutils.widgets.get("task_id").strip(),
-        "task_run_id": dbutils.widgets.get("task_run_id").strip(),
+        "job_id": _get_param("job_id"),
+        "job_run_id": _get_param("job_run_id"),
+        "task_id": _get_param("task_id"),
+        "task_run_id": _get_param("task_run_id"),
     }
 
     print(f"[INFO] env={env} catalog={catalog} schema={schema} run_mode={run_mode}")
