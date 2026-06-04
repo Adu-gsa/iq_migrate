@@ -12,9 +12,9 @@ setup(
     python_requires=">=3.10",
     entry_points={
         "console_scripts": [
-            "wheel_smoke_test=ingest_table.wheel_entrypoints:wheel_smoke_test",
-            "ingest_table_dispatcher=ingest_table.wheel_entrypoints:ingest_table_dispatcher",
-            "bronze_to_silver_ingestion=ingest_table.wheel_entrypoints:bronze_to_silver_ingestion",
+            "wheel_smoke_test=data_ingestion.ingest_table.wheel_entrypoints:wheel_smoke_test",
+            "ingest_table_dispatcher=data_ingestion.ingest_table.wheel_entrypoints:ingest_table_dispatcher",
+            "bronze_to_silver_ingestion=data_ingestion.ingest_table.wheel_entrypoints:bronze_to_silver_ingestion",
         ]
     },
 )

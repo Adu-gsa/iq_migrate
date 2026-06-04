@@ -7,9 +7,9 @@ Ingestion strategy:
 """
 
 
-from env.environment_config import *  # noqa: F403 (was: %run ../src/env/environment_config)
-from env.etl_utils import *  # noqa: F403 (was: %run ../src/env/etl_utils)
-from bronze_silver.SILVER_LAYER_DDL import *  # noqa: F403 (was: %run ./SILVER_LAYER_DDL)
+from data_ingestion.env.environment_config import *  # noqa: F403 (was: %run ../src/env/environment_config)
+from data_ingestion.env.etl_utils import *  # noqa: F403 (was: %run ../src/env/etl_utils)
+from data_ingestion.bronze_silver.SILVER_LAYER_DDL import *  # noqa: F403 (was: %run ./SILVER_LAYER_DDL)
 
 
 

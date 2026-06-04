@@ -14,8 +14,8 @@ authors = [
 dependencies = []
 
 [project.scripts]
-ingest_table_dispatcher = "ingest_table.wheel_entrypoints:ingest_table_dispatcher"
-bronze_to_silver_ingestion = "ingest_table.wheel_entrypoints:bronze_to_silver_ingestion"
+ingest_table_dispatcher = "data_ingestion.ingest_table.wheel_entrypoints:ingest_table_dispatcher"
+bronze_to_silver_ingestion = "data_ingestion.ingest_table.wheel_entrypoints:bronze_to_silver_ingestion"
 
 [tool.setuptools]
 include-package-data = true

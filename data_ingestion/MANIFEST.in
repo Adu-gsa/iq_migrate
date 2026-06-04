@@ -1,5 +1,2 @@
 include resources/Ingest_foia_to_bronze_layer_Optimized.yaml
-recursive-include src/bronze_silver *.py
-recursive-include src/ddl *.py
-recursive-include src/env *.py
-recursive-include src/ingest_table *.py
+recursive-include src/data_ingestion *.py
