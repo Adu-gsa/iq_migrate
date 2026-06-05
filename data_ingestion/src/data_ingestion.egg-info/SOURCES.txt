@@ -23,3 +23,5 @@ src/data_ingestion/ingest_table/INGEST_TABLE_DISPATCHER.py
 src/data_ingestion/ingest_table/__init__.py
 src/data_ingestion/ingest_table/_generated_schemas.py
 src/data_ingestion/ingest_table/wheel_entrypoints.py
+src/data_ingestion/notification/EMAIL_NOTIFICATION.py
+src/data_ingestion/notification/__init__.py

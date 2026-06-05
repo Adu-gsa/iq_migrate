@@ -381,6 +381,23 @@ resources:
         libraries:
         - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
         job_cluster_key: Job_cluster
+      - task_key: send_email_notification
+        depends_on:
+        - task_key: bronze_to_silver_load
+        run_if: ALL_DONE
+        python_wheel_task:
+          package_name: data_ingestion
+          entry_point: send_email_notification
+          named_parameters:
+            env: '{{job.parameters.env}}'
+            job_id: '{{job.id}}'
+            job_run_id: '{{job.run_id}}'
+            task_id: '{{task.name}}'
+            task_run_id: '{{task.run_id}}'
+            recipients: adugna.erena@gsa.gov
+        libraries:
+        - whl: /Workspace/Shared/iq_migrate/data_ingestion/dist/data_ingestion-0.1.0-py3-none-any.whl
+        job_cluster_key: Job_cluster
       job_clusters:
       - job_cluster_key: Job_cluster
         new_cluster:

@@ -25,3 +25,8 @@ def ingest_table_dispatcher():
 def bronze_to_silver_ingestion():
     # Execute bronze-to-silver notebook-script module as a console entry point.
     runpy.run_module("data_ingestion.bronze_silver.BRONZE_TO_SILVER_INGESTION", run_name="__main__")
+
+
+def send_email_notification():
+    # Execute email notification module as a console entry point.
+    runpy.run_module("data_ingestion.notification.EMAIL_NOTIFICATION", run_name="__main__")

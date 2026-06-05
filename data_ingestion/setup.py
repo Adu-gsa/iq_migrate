@@ -15,6 +15,7 @@ setup(
             "wheel_smoke_test=data_ingestion.ingest_table.wheel_entrypoints:wheel_smoke_test",
             "ingest_table_dispatcher=data_ingestion.ingest_table.wheel_entrypoints:ingest_table_dispatcher",
             "bronze_to_silver_ingestion=data_ingestion.ingest_table.wheel_entrypoints:bronze_to_silver_ingestion",
+            "send_email_notification=data_ingestion.ingest_table.wheel_entrypoints:send_email_notification",
         ]
     },
 )
