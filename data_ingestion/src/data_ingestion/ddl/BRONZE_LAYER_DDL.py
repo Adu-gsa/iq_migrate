@@ -1,3 +1,13 @@
+# =============================================================================
+# Module: BRONZE_LAYER_DDL.py
+# Version: 0.1
+# Developed by: Adu Erena
+# Date: 2025-06-05
+# Description: Creates all Bronze layer Delta tables for the FAS Advantage
+#              ingestion pipeline. Each table uses CREATE OR REPLACE with Delta
+#              format, liquid clustering (CLUSTER BY), and column mapping enabled.
+#              Covers all 19 FOIA ingestion tables.
+# =============================================================================
 """
 Bronze Layer DDL — Table Definitions
 **Description:** Creates all Bronze layer Delta tables for the FAS Advantage ingestion pipeline. Each table is created using `CREATE OR REPLACE TABLE` with Delta format, liquid clustering (`CLUSTER BY`), and column mapping enabled.

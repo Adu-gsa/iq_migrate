@@ -1,3 +1,12 @@
+# =============================================================================
+# Module: ETL_LOG_DDL_BRONZE.py
+# Version: 0.1
+# Developed by: Adu Erena
+# Date: 2025-06-05
+# Description: Creates the `etl_log` Delta table used for audit logging across
+#              all Bronze ingestion pipelines. Each ingestion run appends a row
+#              tracking job metadata, timing, record counts, and success/failure.
+# =============================================================================
 """
 ETL Log Table DDL
 **Description:** Creates the `etl_log` Delta table used for audit logging across all Bronze ingestion pipelines. Each ingestion run appends a row tracking job metadata, timing, record counts, and success/failure status.

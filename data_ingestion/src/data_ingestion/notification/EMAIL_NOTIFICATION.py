@@ -1,3 +1,13 @@
+# =============================================================================
+# Module: EMAIL_NOTIFICATION.py
+# Version: 0.1
+# Developed by: Adu Erena
+# Date: 2025-06-05
+# Description: End-of-workflow email notification task. Queries the ETL audit log
+#              for the current job run and sends an HTML email summary with
+#              per-task status, timing, record counts, and failure reasons.
+#              Runs with run_if: ALL_DONE to execute regardless of upstream outcome.
+# =============================================================================
 """
 Email Notification — `EMAIL_NOTIFICATION`
 **Description:** End-of-workflow task that queries the ETL audit log for the

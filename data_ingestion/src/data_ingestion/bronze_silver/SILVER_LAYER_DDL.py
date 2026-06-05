@@ -1,3 +1,12 @@
+# =============================================================================
+# Module: SILVER_LAYER_DDL.py
+# Version: 0.1
+# Developed by: Adu Erena
+# Date: 2025-06-05
+# Description: Creates all Silver layer Delta tables with typed column
+#              definitions. These table schemas serve as the target contract
+#              for the Bronze-to-Silver casting/transformation process.
+# =============================================================================
 """
 Executive Summary
 This notebook provisions the complete Silver layer schema for the FOIA pipeline in Unity Catalog.

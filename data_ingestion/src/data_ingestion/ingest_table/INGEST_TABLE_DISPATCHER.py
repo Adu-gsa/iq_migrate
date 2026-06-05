@@ -1,3 +1,25 @@
+# =============================================================================
+# Module: INGEST_TABLE_DISPATCHER.py
+# Version: 0.1
+# Developed by: Adu Erena
+# Date: 2025-06-05
+# Description: Bronze Ingestion Dispatcher — single workflow entry point for all
+#              Bronze ingest tables. Resolves environment config, loads table-
+#              specific schemas, reads source .txt files, enriches with metadata,
+#              writes to Bronze Delta tables, archives source files, and logs
+#              audit records. Supports both single-table and all-table run modes.
+# =============================================================================
+# =============================================================================
+# Module: INGEST_TABLE_DISPATCHER.py
+# Version: 0.1
+# Developed by: Adu Erena
+# Date: 2025-06-05
+# Description: Bronze Ingestion Dispatcher — single workflow entry point for all
+#              Bronze ingest tables. Resolves environment config, loads table-
+#              specific schemas, reads source .txt files, enriches with metadata,
+#              writes to Bronze Delta tables, archives source files, and logs
+#              audit records. Supports both single-table and all-table run modes.
+# =============================================================================
 """
 Bronze Ingestion Dispatcher
 This notebook provides a single workflow entry point for all Bronze ingest tables.
@@ -19,7 +41,12 @@ from pyspark.sql.types import StructType, StructField, StringType, IntegerType, 
 
 
 def _get_dbutils():
-    """Resolve dbutils in both notebook and wheel/serverless task contexts."""
+    """Resolve dbutils in both notebook and wheel/serverless task contexts.
+
+    Handles dual execution contexts:
+    - Notebook: dbutils is injected as a global by Databricks
+    - Wheel task: imported from databricks.sdk.runtime
+    """
     try:
         return dbutils  # injected in notebook context
     except NameError:
@@ -28,7 +55,12 @@ def _get_dbutils():
 
 
 def _get_spark():
-    """Resolve spark in both notebook and wheel/serverless task contexts."""
+    """Resolve spark in both notebook and wheel/serverless task contexts.
+
+    Handles dual execution contexts:
+    - Notebook: spark is injected as a global by Databricks
+    - Wheel task: retrieved via SparkSession.getActiveSession()
+    """
     try:
         return spark  # injected in notebook context
     except NameError:
@@ -37,6 +69,22 @@ def _get_spark():
 
 
 def _load_module(module_name: str, file_path: str):
+    """Dynamically load a Python module from a workspace file path.
+
+    Used to import environment_config.py and etl_utils.py at runtime
+    when running in notebook context (where standard package imports
+    may not resolve workspace paths correctly).
+
+    Args:
+        module_name: Name to assign to the loaded module
+        file_path:   Absolute filesystem path to the .py file
+
+    Returns:
+        The loaded module object
+
+    Raises:
+        ImportError: If the module spec cannot be created from the path
+    """
     spec = importlib.util.spec_from_file_location(module_name, file_path)
     if spec is None or spec.loader is None:
         raise ImportError(f"Unable to load module spec for {module_name} from: {file_path}")
@@ -46,6 +94,22 @@ def _load_module(module_name: str, file_path: str):
 
 
 def _find_file_upwards(start_dir: str, relative_candidates, max_levels: int = 10) -> str:
+    """Search for a file by walking up the directory tree from a starting point.
+
+    Traverses parent directories looking for any of the relative_candidates paths.
+    Checks both /Workspace-prefixed and bare paths at each level.
+
+    Args:
+        start_dir:           Directory to start searching from
+        relative_candidates: List of relative paths to look for (e.g., ['env/etl_utils.py'])
+        max_levels:          Maximum number of parent directories to traverse
+
+    Returns:
+        Absolute path to the first found file
+
+    Raises:
+        FileNotFoundError: If none of the candidates are found within max_levels
+    """
     current = start_dir
     for _ in range(max_levels + 1):
         for rel_path in relative_candidates:
@@ -65,6 +129,14 @@ def _find_file_upwards(start_dir: str, relative_candidates, max_levels: int = 10
 
 
 def _install_local_fallbacks():
+    """Install self-contained fallback implementations of shared utilities.
+
+    When running as a wheel task (outside notebook context), the shared modules
+    (environment_config.py, etl_utils.py) cannot be loaded via filesystem paths.
+    This function defines minimal local implementations of EnvironmentConfig,
+    ensure_etl_log_table_exists, write_etl_log, and archive_file, then injects
+    them into the global namespace so downstream code works identically.
+    """
     class EnvironmentConfig:
         DEV = "dev"
         TEST = "test"
@@ -205,6 +277,15 @@ except Exception as exc:
 
 # Define unified workflow widgets for this notebook.
 class BronzeIngestion:
+    """Encapsulates the end-to-end Bronze ingestion flow for a single table.
+
+    Responsibilities:
+    1. Read source .txt file using the table-specific StructType schema
+    2. Add metadata columns (ingest_ts, input_file_name)
+    3. Write enriched DataFrame to the Bronze Delta table (full overwrite)
+    4. Archive the source file to the outbound folder with date partitioning
+    5. Write ETL audit log entry on success or failure
+    """
     # Executes one table ingestion flow: read, enrich metadata, write Delta, archive, and log.
     SOURCE_FILE_FORMAT = "csv"
     SOURCE_DELIMITER = "^|~"
@@ -305,6 +386,20 @@ class BronzeIngestion:
             )
 
 def run_bronze_ingestion(table_name: str, source_schema: StructType, source_folder: str = None):
+    """Resolve source path and execute one table ingestion using shared Bronze rules.
+
+    Locates the single .txt file in the inbound folder, builds the ingestion config,
+    and delegates to BronzeIngestion.run() for the actual processing.
+
+    Args:
+        table_name:    Name of the table to ingest
+        source_schema: PySpark StructType defining the expected source file columns
+        source_folder: Optional override for the source folder name (defaults to table_name)
+
+    Raises:
+        FileNotFoundError: If no .txt file exists in the inbound folder
+        ValueError:        If multiple .txt files are found (expects exactly one)
+    """
     # Resolves source path and executes one table ingestion using shared Bronze rules.
     if source_folder:
         input_folder_path = f"{EnvironmentConfig.INBOUND_ROOT}/{source_folder}"
@@ -334,6 +429,14 @@ def run_bronze_ingestion(table_name: str, source_schema: StructType, source_fold
     }
     BronzeIngestion(_get_spark(), source_schema, config).run()
 
+
+# =============================================================================
+# SCHEMA BUILDER FUNCTIONS
+# Each build_schema_<table_name>() function returns a PySpark StructType that
+# defines the column names and types for reading the corresponding source .txt
+# file. All columns are defined as StringType because Bronze ingestion preserves
+# raw values as-is; type casting happens in the Bronze-to-Silver transformation.
+# =============================================================================
 
 def build_schema_adv_product():
     return StructType([
@@ -1018,6 +1121,10 @@ class BronzeIngestionDispatcher:
 
 
 if __name__ == '__main__':
+    # ---- Main Entry Point ----
+    # This block executes when the module is run directly (as a wheel entry point
+    # or notebook). It parses runtime parameters, resolves environment/catalog,
+    # and dispatches ingestion for the requested table(s).
     import sys as _sys
 
     def _get_param(name, default=""):

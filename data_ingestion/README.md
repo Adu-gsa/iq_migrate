@@ -1,3 +1,11 @@
+<!-- =============================================================================
+  Project: foia_data_ingestion
+  Version: 0.1
+  Developed by: Adu Erena
+  Date: 2025-06-05
+  Description: FOIA Data Ingestion Project — Bronze and Silver layer pipeline
+               packaged as a Python wheel for Databricks jobs.
+============================================================================= -->
 
 # foia_data_ingestion
 
@@ -57,7 +65,7 @@ This pipeline ingests FAS Advantage FOIA data from flat files (CSV/TXT) into a D
 ### Tables ingested
 
 | # | Table                  | # | Table              |
-|---|------------------------|---|--------------------|
+|---|------------------------|---|--------------------| 
 | 1 | gsin_hide_remove       | 11 | suspend_contract  |
 | 2 | gsin_hide_remove_hist  | 12 | bpa_header        |
 | 3 | catalog_832            | 13 | bpa_item          |

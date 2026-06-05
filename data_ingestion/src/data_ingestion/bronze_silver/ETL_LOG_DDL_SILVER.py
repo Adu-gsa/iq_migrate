@@ -1,3 +1,11 @@
+# =============================================================================
+# Module: ETL_LOG_DDL_SILVER.py
+# Version: 0.1
+# Developed by: Adu Erena
+# Date: 2025-06-05
+# Description: Creates the ETL audit log Delta table in the Silver schema for
+#              tracking Bronze-to-Silver transformation outcomes.
+# =============================================================================
 """
 ETL Log Table DDL
 **Description:** Creates the `etl_log` Delta table used for audit logging across all Bronze ingestion pipelines. Each ingestion run appends a row tracking job metadata, timing, record counts, and success/failure status.

@@ -1,3 +1,12 @@
+# =============================================================================
+# Module: wheel_entrypoints.py
+# Version: 0.1
+# Developed by: Adu Erena
+# Date: 2025-06-05
+# Description: Console entry points for the data_ingestion Python wheel package.
+#              These functions are registered in pyproject.toml/setup.py and called
+#              by Databricks python_wheel_task to dispatch each pipeline step.
+# =============================================================================
 import os
 import platform
 import runpy
