@@ -238,14 +238,15 @@ def main():
 
     spark = SparkSession.builder.getOrCreate()
 
-    # Query ETL log for task results
-    schema = "bronze"
-    task_rows = _get_task_statuses(spark, catalog, schema, job_run_id)
-
-    if not task_rows:
-        print("[WARN] No ETL log entries found for this job run. Checking silver schema...")
-        schema = "silver"
-        task_rows = _get_task_statuses(spark, catalog, schema, job_run_id)
+    # Query ETL log from both bronze and silver schemas
+    task_rows = []
+    for schema in ("bronze", "silver"):
+        rows = _get_task_statuses(spark, catalog, schema, job_run_id)
+        if rows:
+            print(f"[INFO] Found {len(rows)} ETL log entries in {catalog}.{schema}.etl_log")
+            task_rows.extend(rows)
+    # Sort combined results by start_time
+    task_rows.sort(key=lambda r: r["start_time"] or datetime.min)
 
     if not task_rows:
         print("[WARN] No ETL log entries found in any schema. Sending notification with minimal info.")
