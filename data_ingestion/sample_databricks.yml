@@ -1,0 +1,162 @@
+bundle:
+  name: your_bundle_name_whl
+
+presets:
+  tags:
+    project: your_tag_name
+sync:
+  paths:
+    - ./databricks.yml
+  exclude:
+    - docs/**
+    - scripts/**
+    - sql/**
+    - README.md
+    - LICENSE
+    - .databricks/**
+    - "**/__pycache__/**"
+    - "**/*.pyc"
+    - "**/.DS_Store"
+    - "**/.git/**"
+    - "**/.github/**"
+    - "**/.vscode/**"
+
+variables:
+  deployer_service_principal_application_id:
+    description: "Deployer Service Principal application (client) ID for the target environment"
+    default: "1dc64869-eefe-473b-8563-185460c9d5e2"
+  runner_service_principal_application_id:
+    description: "ETL Runner Service Principal application (client) ID for the target environment"
+    default: "8d5bd008-2a79-48dd-b20d-03ab66e7c765"
+  job_cluster_policy_id:
+    description: "Job cluster policy id"
+    default: "001E9075C254E0FD"
+  wheel_version:
+    default: "1.0.0"
+  wheel_path:
+    default: "/Volumes/<path to your wheel path>/src_dbx_wheels/${var.wheel_version}/cmf_bpa_etl-${var.wheel_version}-py3-none-any.whl"
+  # config_path:
+  #   description: "Config folder (UC Volumes)"
+  #   default: "/Volumes/<path to your config file path>/config"
+
+
+permissions:
+  - service_principal_name: "${var.deployer_service_principal_application_id}"
+    level: CAN_MANAGE
+  - service_principal_name: "${var.runner_service_principal_application_id}"
+    level: CAN_RUN
+  - user_name: "youremail@gsa.gov"
+    level: CAN_MANAGE
+  - group_name: FAS_EDA_Analytics_Admins_prd
+    level: CAN_MANAGE
+
+x-your-job-clusters: &your_job_clusters
+  - job_cluster_key: YOUR_ETL_Job_cluster
+    new_cluster:
+      spark_version: 17.3.x-scala2.13
+      aws_attributes:
+        first_on_demand: 1
+        availability: SPOT_WITH_FALLBACK
+        zone_id: auto
+        spot_bid_price_percent: 100
+        ebs_volume_type: GENERAL_PURPOSE_SSD
+        ebs_volume_count: 3
+        ebs_volume_size: 100
+      node_type_id: i4i.2xlarge
+      enable_elastic_disk: true
+      policy_id: "${var.job_cluster_policy_id}"
+      data_security_mode: SINGLE_USER
+      kind: CLASSIC_PREVIEW
+      autoscale:
+        min_workers: 2
+        max_workers: 6
+
+x-email-notifications: &email_notify
+  on_failure:
+    - youremail@gsa.gov
+    - additionalemail@gsa.gov
+  on_success:
+    - youremail@gsa.gov
+
+targets:
+  prod:
+    workspace:
+      host: https://gsa-fas-eda-analytics-prd.cloud.databricks.com
+      root_path: /Workspace/<your desired path>
+    presets:
+      trigger_pause_status: UNPAUSED
+    permissions:
+      - user_name: "youremail@gsa.gov"
+        level: CAN_MANAGE
+      - group_name: FAS_EDA_Analytics_Admins_prd
+        level: CAN_MANAGE
+      - service_principal_name: "${var.deployer_service_principal_application_id}"
+        level: CAN_MANAGE
+
+resources:
+  jobs:
+    YOUR_ETL_TEST:
+      name: YOUR_ETL_TEST_WHL
+      run_as:
+        service_principal_name: "${var.runner_service_principal_application_id}"
+      permissions:
+        - service_principal_name: "${var.deployer_service_principal_application_id}"
+          level: CAN_MANAGE
+        - user_name: "youremail@gsa.gov"
+          level: CAN_MANAGE
+        - user_name: "email2@gsa.gov"
+          level: CAN_MANAGE_RUN
+        - user_name: "email3@gsa.gov"
+          level: CAN_MANAGE_RUN
+        - user_name: "email4@gsa.gov"
+          level: CAN_MANAGE_RUN
+        - group_name: FAS_EDA_Analytics_Admins_prd
+          level: CAN_MANAGE
+      email_notifications: *email_notify
+      job_clusters: *your_job_clusters
+      tasks:
+        - task_key: YOUR_ETL_TEST_task
+          job_cluster_key: YOUR_ETL_Job_cluster
+
+          libraries:
+            - whl: ${var.wheel_path}
+
+          # ✅ run the wheel entrypoint (console script)
+          python_wheel_task:
+            package_name: your-etl
+            entry_point: cmf-bpa
+   
+
+    YOUR_ETL_PROD_WEEKLY:
+      name: YOUR_ETL_PROD_WEEKLY_WHL
+      run_as:
+        service_principal_name: "${var.runner_service_principal_application_id}"
+      permissions:
+        - service_principal_name: "${var.deployer_service_principal_application_id}"
+          level: CAN_MANAGE
+        - user_name: "youremail@gsa.gov"
+          level: CAN_MANAGE
+        - user_name: "email2@gsa.gov"
+          level: CAN_MANAGE_RUN
+        - user_name: "email3@gsa.gov"
+          level: CAN_MANAGE_RUN
+        - user_name: "email4@gsa.gov"
+          level: CAN_MANAGE_RUN
+        - group_name: FAS_EDA_Analytics_Admins_prd
+          level: CAN_MANAGE
+      schedule:
+        quartz_cron_expression: "0 30 6 ? * THU *"
+        timezone_id: "America/New_York"
+      email_notifications: *email_notify
+      job_clusters: *your_job_clusters
+      tasks:
+        - task_key: YOUR_ETL_PROD_WEEKLY_task
+          job_cluster_key: YOUR_ETL_Job_cluster
+
+          libraries:
+            - whl: ${var.wheel_path}
+
+          # ✅ run the wheel entrypoint (console script)
+          python_wheel_task:
+            package_name: your-etl
+            entry_point: cmf-bpa

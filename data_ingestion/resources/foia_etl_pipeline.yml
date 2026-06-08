@@ -1,0 +1,442 @@
+resources:
+  jobs:
+    Ingest_foia_to_bronze_layer:
+      name: Ingest_foia_to_bronze_layer
+      email_notifications:
+        no_alert_for_skipped_runs: true
+      notification_settings:
+        no_alert_for_skipped_runs: true
+        no_alert_for_canceled_runs: true
+      tasks:
+        - task_key: Ingest_foia_gsin_hide_remove_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: gsin_hide_remove
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_gsin_hide_remove_hist_table
+          depends_on:
+            - task_key: Ingest_foia_gsin_hide_remove_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: gsin_hide_remove_hist
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_catalog_832_table
+          depends_on:
+            - task_key: Ingest_foia_gsin_hide_remove_hist_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: catalog_832
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_sin_limit_table
+          depends_on:
+            - task_key: Ingest_foia_gsin_hide_remove_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: sin_limit
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_contract_table
+          depends_on:
+            - task_key: Ingest_foia_sin_limit_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: contracts
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_mp_product_table
+          depends_on:
+            - task_key: Ingest_foia_contract_table
+            - task_key: Ingest_foia_catalog_832_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: mp_product
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_mp_product_file_table
+          depends_on:
+            - task_key: Ingest_foia_mp_product_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: product_file
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_order_status_table
+          depends_on:
+            - task_key: Ingest_foia_mp_product_file_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: order_status
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_sin_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: sin
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_contract_zone
+          depends_on:
+            - task_key: Ingest_foia_sin_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: contract_zone
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_suspend_contract_table
+          depends_on:
+            - task_key: Ingest_foia_contract_zone
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: suspend_contract
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_bpa_header_table
+          depends_on:
+            - task_key: Ingest_foia_suspend_contract_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: bpa_header
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_bpa_item_table
+          depends_on:
+            - task_key: Ingest_foia_bpa_header_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: bpa_item
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_bpa_item_price_table
+          depends_on:
+            - task_key: Ingest_foia_suspend_contract_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: bpa_item_price
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_price_discount_table
+          depends_on:
+            - task_key: Ingest_foia_bpa_item_price_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: price_discount
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_zone_price_table
+          depends_on:
+            - task_key: Ingest_foia_price_discount_table
+            - task_key: Ingest_foia_bpa_item_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: zone_price
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_adv_product_table
+          depends_on:
+            - task_key: Ingest_foia_zone_price_table
+            - task_key: Ingest_foia_order_status_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: adv_product
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_item_xref_attributes_table
+          depends_on:
+            - task_key: Ingest_foia_adv_product_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: item_xref_attributes
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: Ingest_foia_item_xref_table
+          depends_on:
+            - task_key: Ingest_foia_item_xref_attributes_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: ingest_table_dispatcher
+            named_parameters:
+              table_name: item_xref
+              job_run_id: "{{job.run_id}}"
+              job_id: "{{job.id}}"
+              run_mode: single
+              fail_fast: "true"
+              schema: bronze
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: bronze_to_silver_load
+          depends_on:
+            - task_key: Ingest_foia_item_xref_table
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: bronze_to_silver_ingestion
+            named_parameters:
+              cast_error_max_rows: "0"
+              job_run_id: "{{job.run_id}}"
+              cast_error_max_pct: "0"
+              fail_on_cast_errors: "false"
+              job_id: "{{job.id}}"
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+        - task_key: email_notification
+          depends_on:
+            - task_key: bronze_to_silver_load
+          run_if: ALL_DONE
+          python_wheel_task:
+            package_name: data_ingestion
+            entry_point: send_email_notification
+            named_parameters:
+              job_run_id: "{{job.run_id}}"
+              recipients: ${var.email_recipients}
+              job_id: "{{job.id}}"
+              task_id: "{{task.name}}"
+              task_run_id: "{{task.run_id}}"
+              env: "{{job.parameters.env}}"
+          job_cluster_key: Job_cluster
+          libraries:
+            - whl: ${var.whl_path}
+      job_clusters:
+        - job_cluster_key: Job_cluster
+          new_cluster:
+            spark_version: ${var.spark_version}
+            spark_conf:
+              spark.databricks.hive.metastore.glueCatalog.enabled: "false"
+              spark.driver.extraJavaOptions: -XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=512m
+              spark.hadoop.hive.metastore.uris: ""
+              spark.sql.hive.metastore.jars: builtin
+              spark.hadoop.javax.jdo.option.ConnectionURL: "jdbc:derby:;databaseName=/tmp/metastore_db;create=true"
+              spark.hadoop.javax.jdo.option.ConnectionDriverName: org.apache.derby.jdbc.EmbeddedDriver
+              spark.hadoop.datanucleus.autoCreateTables: "true"
+            aws_attributes:
+              first_on_demand: 1
+              availability: SPOT_WITH_FALLBACK
+              zone_id: auto
+              spot_bid_price_percent: 100
+              ebs_volume_type: GENERAL_PURPOSE_SSD
+              ebs_volume_count: 3
+              ebs_volume_size: 100
+            node_type_id: ${var.node_type_id}
+            custom_tags:
+              WORKSPACE: ${var.workspace_tag}
+            enable_elastic_disk: true
+            policy_id: ${var.cluster_policy}
+            data_security_mode: SINGLE_USER
+            runtime_engine: STANDARD
+            autoscale:
+              min_workers: ${var.min_workers}
+              max_workers: ${var.max_workers}
+      queue:
+        enabled: true
+      parameters:
+        - name: env
+          default: test
+      run_as:
+        service_principal_name: ${var.service_principal_name}

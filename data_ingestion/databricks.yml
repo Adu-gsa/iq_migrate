@@ -1,39 +1,47 @@
-# This is a Databricks asset bundle definition for data_ingestion.
+# Databricks Asset Bundle — data_ingestion
 bundle:
   name: data_ingestion
 
+presets:
+  tags:
+    project: foia_data_ingestion
+
+sync:
+  # Wheel-based project: only the bundle config needs to reach the workspace.
+  # All Python code is packaged into the wheel and uploaded to UC Volumes separately.
+  paths:
+    - ./databricks.yml
+  exclude:
+    # Python build outputs
+    - build/**
+    - dist/**
+    - src/**
+    - "src/**/*.egg-info/**"
+    # Python packaging config (not needed at runtime)
+    - setup.py
+    - pyproject.toml
+    - MANIFEST.in
+    # Reference / documentation files
+    - README.md
+    - sample_databricks.yml
+    - Ingest_foia_to_bronze_layer_Optimized_v3.yaml
+    # Python bytecode cache
+    - "**/__pycache__/**"
+    - "**/*.pyc"
+    # Tooling and OS metadata
+    - "**/.databricks/**"
+    - "**/.DS_Store"
+    - "**/.git/**"
+    - "**/.vscode/**"
+    - "**/.github/**"
+
 include:
-  - resources/data_ingestion_job.job.yml
-  - resources/data_ingestion_pipeline.pipeline.yml
-  - resources/Ingest_foia_to_bronze_layer_Optimized.yaml
+  - resources/foia_etl_pipeline.yml
+  - resources/variables.yaml
 
-variables:
-  catalog:
-    description: The catalog to use
-  schema:
-    description: The default schema for pipeline resources
-  bronze_schema:
-    description: Bronze schema for ingestion tasks
-  silver_schema:
-    description: Silver schema for downstream tasks
-
-  s3_bucket:
-    description: The S3 bucket to use for data ingestion
-
-  cluster_policy:
-    description: The cluster policy ID to use
-
-  node_type_id:
-    description: The node type for the cluster
-
-  spark_version:
-    description: The Databricks runtime version
-
-  service_principal_name:
-    description: The service principal for job runs
-
-  custom_tags:
-    description: Custom tags for the cluster
+permissions:
+  - user_name: adugna.erena@gsa.gov
+    level: CAN_MANAGE
 
 targets:
   dev:
@@ -41,38 +49,27 @@ targets:
     default: true
     workspace:
       host: https://gsa-fas-advantage-np.cloud.databricks.com
-    variables:
-      catalog: foia_tst
-      schema: silver
-      bronze_schema: bronze
-      silver_schema: silver
-      s3_bucket: s3://712311343692-fcs-datalake-np
-      cluster_policy: 0001188AD6ACDC6F
-      node_type_id: r5n.2xlarge
-      spark_version: 17.3.x-scala2.13
-      service_principal_name: f685fa44-7559-41fd-91cf-353e5cba24d9
-      custom_tags:
-        WORKSPACE: fas-advantage-np
+      root_path: /Shared/.bundle/${bundle.name}/dev
     permissions:
-      - user_name: svc_fas_advantage_foia_etl_user_tst
+      - service_principal_name: svc_fas_advantage_foia_etl_user_dev
         level: CAN_MANAGE
+
+  test:
+    mode: development
+    workspace:
+      host: https://gsa-fas-advantage-np.cloud.databricks.com
+      root_path: /Shared/.bundle/${bundle.name}/test
+    permissions:
+      - service_principal_name: svc_fas_advantage_foia_etl_user_tst
+        level: CAN_MANAGE
+
   prod:
     mode: production
     workspace:
-      host:  https://gsa-fas-advantage.cloud.databricks.com/
-      root_path: /Workspace/Users/<your-user>/.bundle/${bundle.name}/${bundle.target}
-    variables:
-      catalog: foia_prd
-      schema: silver
-      bronze_schema: bronze
-      silver_schema: silver
-      s3_bucket: s3://712311343692-fcs-datalake-prd
-      cluster_policy: 0001188AD6ACDC6F
-      node_type_id: r5n.2xlarge
-      spark_version: 17.3.x-scala2.13
-      service_principal_name: f685fa44-7559-41fd-91cf-353e5cba24d9
-      custom_tags:
-        WORKSPACE: fas-advantage
+      host: https://gsa-fas-advantage.cloud.databricks.com
+      root_path: /Shared/.bundle/${bundle.name}/prod
+    presets:
+      trigger_pause_status: UNPAUSED
     permissions:
-      - user_name: svc_fas_advantage_foia_etl_user_prd
+      - service_principal_name: svc_fas_advantage_foia_etl_user_prd  # TODO: confirm prod service account name
         level: CAN_MANAGE

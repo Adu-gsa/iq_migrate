@@ -1,25 +1,76 @@
-dev:
-  catalog: foia_tst
-  schema: silver
-  bronze_schema: bronze
-  silver_schema: silver
-  s3_bucket: s3://712311343692-fcs-datalake-np
-  cluster_policy: 0001188AD6ACDC6F
-  node_type_id: r5n.2xlarge
-  spark_version: 17.3.x-scala2.13
-  service_principal_name: f685fa44-7559-41fd-91cf-353e5cba24d9
-  custom_tags:
-    WORKSPACE: fas-advantage-np
+# DAB variable declarations for the data_ingestion bundle.
+# This file is included by databricks.yml via the include directive.
+# Per-environment values are set in the targets block below and merged
+# with the infrastructure config in databricks.yml at bundle resolution time.
 
-prod:
-  catalog: foia_prd
-  schema: silver
-  bronze_schema: bronze
-  silver_schema: silver
-  s3_bucket: s3://712311343692-fcs-datalake-prd
-  cluster_policy: 0001188AD6ACDC6F
-  node_type_id: r5n.2xlarge
-  spark_version: 17.3.x-scala2.13
-  service_principal_name: f685fa44-7559-41fd-91cf-353e5cba24d9
-  custom_tags:
-    WORKSPACE: fas-advantage
+variables:
+  catalog:
+    description: Unity Catalog name for the target environment
+  s3_bucket:
+    description: S3 bucket for data ingestion storage
+  cluster_policy:
+    description: Cluster policy ID
+  service_principal_name:
+    description: Service principal UUID used as run_as for ETL jobs
+  email_recipients:
+    description: Comma-separated email recipients for job status notifications
+  whl_path:
+    description: Full Databricks Volumes path to the data_ingestion wheel file
+  workspace_tag:
+    description: Value for the WORKSPACE custom cluster tag
+  bronze_schema:
+    description: Bronze layer schema name
+    default: bronze
+  silver_schema:
+    description: Silver layer schema name
+    default: silver
+  node_type_id:
+    description: Worker node instance type
+    default: r5n.2xlarge
+  spark_version:
+    description: Databricks runtime version
+    default: 17.3.x-scala2.13
+  wheel_version:
+    description: Wheel file version to deploy — bump here to roll out a new build
+    default: "0.1.0"
+  min_workers:
+    description: Minimum number of autoscale workers for the job cluster
+  max_workers:
+    description: Maximum number of autoscale workers for the job cluster
+
+targets:
+  dev:
+    variables:
+      catalog: foia_dev
+      s3_bucket: s3://712311343692-fcs-datalake-np
+      cluster_policy: 0001188AD6ACDC6F
+      service_principal_name: 4dd6e28b-a67f-4a82-ac85-489fcd47d093
+      email_recipients: adugna.erena@gsa.gov
+      whl_path: /Volumes/fas_advantage_np/bronze/fas_advantage_s3_np/IQ_RAW_FILES/whl_file/data_ingestion-${var.wheel_version}-py3-none-any.whl
+      workspace_tag: fas-advantage-np
+      min_workers: 2
+      max_workers: 4
+
+  test:
+    variables:
+      catalog: foia_tst
+      s3_bucket: s3://712311343692-fcs-datalake-np
+      cluster_policy: 0001188AD6ACDC6F
+      service_principal_name: c3a3cbe0-319b-4333-bdf7-9bc1b5b7d9c3
+      email_recipients: adugna.erena@gsa.gov
+      whl_path: /Volumes/fas_advantage_np/bronze/fas_advantage_s3_np/IQ_RAW_FILES/whl_file/data_ingestion-${var.wheel_version}-py3-none-any.whl
+      workspace_tag: fas-advantage-np
+      min_workers: 2
+      max_workers: 4
+
+  prod:
+    variables:
+      catalog: foia_prd
+      s3_bucket: s3://712311343692-fcs-datalake-prd
+      cluster_policy: 0001188AD6ACDC6F        # TODO: confirm prod cluster policy ID
+      service_principal_name: f685fa44-7559-41fd-91cf-353e5cba2411  # TODO: confirm prod service principal
+      email_recipients: adugna.erena@gsa.gov  # TODO: update to prod distribution list if different
+      whl_path: /Volumes/fas_advantage/bronze/fas_advantage_s3/IQ_RAW_FILES/whl_file/data_ingestion-${var.wheel_version}-py3-none-any.whl  # TODO: confirm prod volume path
+      workspace_tag: fas-advantage
+      min_workers: 4
+      max_workers: 8
