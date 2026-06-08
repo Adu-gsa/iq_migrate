@@ -12,10 +12,10 @@ variables:
     description: Cluster policy ID
   service_principal_name:
     description: Service principal UUID used as run_as for ETL jobs
+  deployer_service_principal:
+    description: Service principal UUID used by CI/CD to deploy the asset bundle
   email_recipients:
     description: Comma-separated email recipients for job status notifications
-  whl_path:
-    description: Full Databricks Volumes path to the data_ingestion wheel file
   workspace_tag:
     description: Value for the WORKSPACE custom cluster tag
   bronze_schema:
@@ -44,9 +44,9 @@ targets:
       catalog: foia_dev
       s3_bucket: s3://712311343692-fcs-datalake-np
       cluster_policy: 0001188AD6ACDC6F
-      service_principal_name: 4dd6e28b-a67f-4a82-ac85-489fcd47d093
+      service_principal_name: 4dd6e28b-a67f-4a82-ac85-489fcd47d093  # svc_fas_advantage_foia_etl_user_dev
+      deployer_service_principal: 7e569d7f-022e-4578-98eb-8f4a2446d515  # svc_fas_advantage_foia_deployer_dev
       email_recipients: adugna.erena@gsa.gov
-      whl_path: /Volumes/fas_advantage_np/bronze/fas_advantage_s3_np/IQ_RAW_FILES/whl_file/data_ingestion-${var.wheel_version}-py3-none-any.whl
       workspace_tag: fas-advantage-np
       min_workers: 2
       max_workers: 4
@@ -56,9 +56,9 @@ targets:
       catalog: foia_tst
       s3_bucket: s3://712311343692-fcs-datalake-np
       cluster_policy: 0001188AD6ACDC6F
-      service_principal_name: c3a3cbe0-319b-4333-bdf7-9bc1b5b7d9c3
+      service_principal_name: f685fa44-7559-41fd-91cf-353e5cba24d9  # svc_fas_advantage_foia_etl_user_tst
+      deployer_service_principal: c3a3cbe0-319b-4333-bdf7-9bc1b5b7d9c3  # svc_fas_advantage_foia_deployer_tst
       email_recipients: adugna.erena@gsa.gov
-      whl_path: /Volumes/fas_advantage_np/bronze/fas_advantage_s3_np/IQ_RAW_FILES/whl_file/data_ingestion-${var.wheel_version}-py3-none-any.whl
       workspace_tag: fas-advantage-np
       min_workers: 2
       max_workers: 4
@@ -67,10 +67,10 @@ targets:
     variables:
       catalog: foia_prd
       s3_bucket: s3://712311343692-fcs-datalake-prd
-      cluster_policy: 0001188AD6ACDC6F        # TODO: confirm prod cluster policy ID
-      service_principal_name: f685fa44-7559-41fd-91cf-353e5cba2411  # TODO: confirm prod service principal
-      email_recipients: adugna.erena@gsa.gov  # TODO: update to prod distribution list if different
-      whl_path: /Volumes/fas_advantage/bronze/fas_advantage_s3/IQ_RAW_FILES/whl_file/data_ingestion-${var.wheel_version}-py3-none-any.whl  # TODO: confirm prod volume path
+      cluster_policy: 0001188AD6ACDC6F
+      service_principal_name: 0da406d4-a9bf-44ec-a4bf-8b14a2d9680e  # svc_fas_advantage_foia_etl_user_prd
+      deployer_service_principal: ecd3ae1d-ea82-4010-8a73-dbb14f9ea596  # svc_fas_advantage_foia_deployer_prd
+      email_recipients: adugna.erena@gsa.gov  # TODO: update to prod distribution list
       workspace_tag: fas-advantage
       min_workers: 4
       max_workers: 8

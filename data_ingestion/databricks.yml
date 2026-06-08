@@ -39,6 +39,12 @@ include:
   - resources/foia_etl_pipeline.yml
   - resources/variables.yaml
 
+artifacts:
+  data_ingestion_whl:
+    type: whl
+    path: .
+    build: pip wheel . --no-deps -w dist
+
 permissions:
   - user_name: adugna.erena@gsa.gov
     level: CAN_MANAGE
@@ -53,6 +59,10 @@ targets:
     permissions:
       - service_principal_name: svc_fas_advantage_foia_etl_user_dev
         level: CAN_MANAGE
+      - service_principal_name: svc_fas_advantage_foia_deployer_dev
+        level: CAN_MANAGE
+      - user_name: adugna.erena@gsa.gov
+        level: CAN_MANAGE
 
   test:
     mode: development
@@ -61,6 +71,10 @@ targets:
       root_path: /Shared/.bundle/${bundle.name}/test
     permissions:
       - service_principal_name: svc_fas_advantage_foia_etl_user_tst
+        level: CAN_MANAGE
+      - service_principal_name: svc_fas_advantage_foia_deployer_tst
+        level: CAN_MANAGE
+      - user_name: adugna.erena@gsa.gov
         level: CAN_MANAGE
 
   prod:
@@ -71,5 +85,9 @@ targets:
     presets:
       trigger_pause_status: UNPAUSED
     permissions:
-      - service_principal_name: svc_fas_advantage_foia_etl_user_prd  # TODO: confirm prod service account name
+      - service_principal_name: svc_fas_advantage_foia_etl_user_prd
+        level: CAN_MANAGE
+      - service_principal_name: svc_fas_advantage_foia_deployer_prd
+        level: CAN_MANAGE
+      - user_name: adugna.erena@gsa.gov
         level: CAN_MANAGE

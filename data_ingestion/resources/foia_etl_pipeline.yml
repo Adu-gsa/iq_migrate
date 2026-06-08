@@ -24,7 +24,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_gsin_hide_remove_hist_table
           depends_on:
             - task_key: Ingest_foia_gsin_hide_remove_table
@@ -43,7 +43,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_catalog_832_table
           depends_on:
             - task_key: Ingest_foia_gsin_hide_remove_hist_table
@@ -62,7 +62,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_sin_limit_table
           depends_on:
             - task_key: Ingest_foia_gsin_hide_remove_table
@@ -81,7 +81,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_contract_table
           depends_on:
             - task_key: Ingest_foia_sin_limit_table
@@ -100,7 +100,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_mp_product_table
           depends_on:
             - task_key: Ingest_foia_contract_table
@@ -120,7 +120,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_mp_product_file_table
           depends_on:
             - task_key: Ingest_foia_mp_product_table
@@ -139,7 +139,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_order_status_table
           depends_on:
             - task_key: Ingest_foia_mp_product_file_table
@@ -158,7 +158,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_sin_table
           python_wheel_task:
             package_name: data_ingestion
@@ -175,7 +175,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_contract_zone
           depends_on:
             - task_key: Ingest_foia_sin_table
@@ -194,7 +194,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_suspend_contract_table
           depends_on:
             - task_key: Ingest_foia_contract_zone
@@ -213,7 +213,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_bpa_header_table
           depends_on:
             - task_key: Ingest_foia_suspend_contract_table
@@ -232,7 +232,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_bpa_item_table
           depends_on:
             - task_key: Ingest_foia_bpa_header_table
@@ -251,7 +251,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_bpa_item_price_table
           depends_on:
             - task_key: Ingest_foia_suspend_contract_table
@@ -270,7 +270,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_price_discount_table
           depends_on:
             - task_key: Ingest_foia_bpa_item_price_table
@@ -289,7 +289,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_zone_price_table
           depends_on:
             - task_key: Ingest_foia_price_discount_table
@@ -309,7 +309,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_adv_product_table
           depends_on:
             - task_key: Ingest_foia_zone_price_table
@@ -329,7 +329,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_item_xref_attributes_table
           depends_on:
             - task_key: Ingest_foia_adv_product_table
@@ -348,7 +348,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: Ingest_foia_item_xref_table
           depends_on:
             - task_key: Ingest_foia_item_xref_attributes_table
@@ -367,7 +367,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: bronze_to_silver_load
           depends_on:
             - task_key: Ingest_foia_item_xref_table
@@ -385,7 +385,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
         - task_key: email_notification
           depends_on:
             - task_key: bronze_to_silver_load
@@ -402,7 +402,7 @@ resources:
               env: "{{job.parameters.env}}"
           job_cluster_key: Job_cluster
           libraries:
-            - whl: ${var.whl_path}
+            - whl: ${artifacts.data_ingestion_whl.remote.path}
       job_clusters:
         - job_cluster_key: Job_cluster
           new_cluster:
